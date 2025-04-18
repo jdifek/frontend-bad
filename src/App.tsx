@@ -9,7 +9,6 @@ export const App = () => {
     const tg = window.Telegram?.WebApp;
     
     if (tg) {
-      // Попробуем без вызова ready()
       tg.ready();
 
       // Проверяем поддержку Bot API 8.0+
