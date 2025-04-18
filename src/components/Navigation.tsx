@@ -40,7 +40,7 @@ export const Navigation = () => {
 
 	return (
 		<motion.nav
-			className='bg-white shadow-md p-4 sticky top-0 z-999 border-b border-sunshine-yellow'
+			className='bg-white shadow-md p-4 sticky top-0 mt-[70px] z-999 border-b border-sunshine-yellow '
 			initial='hidden'
 			animate='visible'
 			variants={navVariants}
