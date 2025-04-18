@@ -10,6 +10,7 @@ interface TelegramWebApp {
 	ready: () => void
 	expand: () => void
 	close: () => void
+  requestFullscreen:  () => void
 }
 
 interface Window {
