@@ -2,8 +2,12 @@ import { useState } from 'react'
 import { motion } from 'framer-motion'
 import { IoAtOutline } from 'react-icons/io5'
 
-export const GoalSelector = ({ onSelect }) => {
-	const goals = [
+interface GoalSelectorProps {
+	onSelect: (goal: string) => void;
+}
+
+export const GoalSelector = ({ onSelect }: GoalSelectorProps) => {
+	const goals: (keyof typeof goalColors)[] = [
 		'Повысить концентрацию',
 		'Энергия / бодрость',
 		'Улучшить сон',
@@ -14,14 +18,14 @@ export const GoalSelector = ({ onSelect }) => {
 	const [selectedGoal, setSelectedGoal] = useState('')
 	const [customGoal, setCustomGoal] = useState('')
 
-	const handleSelect = goal => {
+	const handleSelect = (goal: string) => {
 		setSelectedGoal(goal)
 		if (goal !== 'Другое') {
 			onSelect(goal)
 		}
 	}
 
-	const handleCustomGoal = e => {
+	const handleCustomGoal = (e: React.ChangeEvent<HTMLInputElement>) => {
 		setCustomGoal(e.target.value)
 		onSelect(e.target.value)
 	}
@@ -59,7 +63,7 @@ export const GoalSelector = ({ onSelect }) => {
 						onClick={() => handleSelect(goal)}
 						className={`p-4 rounded-xl text-left flex items-center justify-center ${
 							selectedGoal === goal
-								? `${goalColors[goal]} text-text-primary shadow-md`
+								? `${goalColors[goal as keyof typeof goalColors]} text-text-primary shadow-md`
 								: `${goalColors[goal]} bg-opacity-30 text-text-primary`
 						} transition-all border border-white`}
 						variants={buttonVariants}

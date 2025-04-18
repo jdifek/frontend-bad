@@ -1,10 +1,14 @@
 import { motion } from 'framer-motion'
 import { IoFlaskOutline, IoCloudUploadOutline } from 'react-icons/io5'
 
-export const AnalysisChecklist = ({ onSelect }) => {
+interface AnalysisChecklistProps {
+	onSelect: (biomarker: string) => void;
+}
+
+export const AnalysisChecklist = ({ onSelect }: AnalysisChecklistProps) => {
 	const biomarkers = ['Витамин D', 'Витамин B12', 'Ферритин', 'Магний', 'Цинк']
 
-	const handleChange = biomarker => {
+	const handleChange = (biomarker: string) => {
 		onSelect(biomarker)
 	}
 

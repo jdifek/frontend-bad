@@ -2,7 +2,11 @@ import { useState } from 'react'
 import { motion } from 'framer-motion'
 import { IoPencil, IoCamera, IoAddCircleOutline } from 'react-icons/io5'
 
-export const SupplementInput = ({ onAdd }) => {
+interface SupplementInputProps {
+	onAdd: (supplement: { name: string }) => void;
+}
+
+export const SupplementInput = ({ onAdd }: SupplementInputProps) => {
 	const [supplement, setSupplement] = useState('')
 	const [method, setMethod] = useState('manual')
 

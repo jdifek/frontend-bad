@@ -1,7 +1,18 @@
 import { motion } from 'framer-motion'
 import { IoRestaurantOutline, IoNutritionOutline } from 'react-icons/io5'
 
-export const FoodAnalysisResult = ({ analysis }) => {
+interface Analysis {
+	dish: string;
+	calories: number;
+	nutrients: {
+		protein: number;
+		fats: number;
+		carbs: number;
+	};
+	suggestions: string;
+}
+
+export const FoodAnalysisResult = ({ analysis }: { analysis: Analysis }) => {
 	const resultVariants = {
 		hidden: { opacity: 0, y: 20 },
 		visible: { opacity: 1, y: 0, transition: { duration: 0.5 } },

@@ -6,16 +6,32 @@ import { CourseTable } from '../components/re-used/CourseTable'
 import { IoCalendarOutline } from 'react-icons/io5'
 import { Slide, toast } from 'react-toastify'
 
+type Course = {
+	goal: string
+	supplements: { name: string; dose: string }[]
+	schedule: {
+		morning: string[]
+		afternoon: string[]
+		evening: string[]
+	}
+	duration: number
+	suggestions: string
+}
+
 export const AnalysisCourse = () => {
 	const [goal, setGoal] = useState('')
-	const [biomarkers, setBiomarkers] = useState([])
-	const [course, setCourse] = useState(null)
+	const [biomarkers, setBiomarkers] = useState<string[]>([])
+	const [course, setCourse] = useState<Course | null>(null)
 
 	const handleGenerateCourse = () => {
 		setCourse({
 			goal,
 			supplements: [{ name: 'Витамин D', dose: '1000IU' }],
-			schedule: { morning: ['Витамин D'], afternoon: [], evening: [] },
+			schedule: {
+				morning: ['Витамин D'],
+				afternoon: [],
+				evening: [],
+			},
 			duration: 60,
 			suggestions: biomarkers.includes('Ферритин')
 				? 'Уровень ферритина ниже нормы — добавьте железо с витамином С.'
@@ -48,7 +64,7 @@ export const AnalysisCourse = () => {
 				Курс по анализам
 			</motion.h1>
 			<AnalysisChecklist
-				onSelect={biomarker => setBiomarkers([...biomarkers, biomarker])}
+				onSelect={(biomarker: string) => setBiomarkers([...biomarkers, biomarker])}
 			/>
 			<GoalSelector onSelect={setGoal} />
 			<motion.button

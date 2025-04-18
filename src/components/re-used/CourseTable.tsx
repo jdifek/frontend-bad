@@ -1,7 +1,17 @@
 import { motion } from 'framer-motion'
 import { IoPinOutline, IoTimeOutline, IoCalendarOutline } from 'react-icons/io5'
 
-export const CourseTable = ({ course }) => {
+interface Course {
+	supplements: { name: string }[];
+	schedule: {
+		morning: string[];
+		afternoon: string[];
+	};
+	duration: number;
+	suggestions?: string;
+}
+
+export const CourseTable = ({ course }: { course: Course }) => {
 	const tableVariants = {
 		hidden: { opacity: 0, y: 20 },
 		visible: { opacity: 1, y: 0, transition: { duration: 0.5 } },

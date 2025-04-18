@@ -3,8 +3,19 @@ import { motion } from 'framer-motion'
 import { IoCamera } from 'react-icons/io5'
 import { FoodAnalysisResult } from '../components/FoodAnalysisResult'
 
+type Analysis = {
+	dish: string
+	calories: number
+	nutrients: {
+		protein: number
+		fats: number
+		carbs: number
+	}
+	suggestions: string
+}
+
 export const FoodAnalysis = () => {
-	const [analysis, setAnalysis] = useState(null)
+	const [analysis, setAnalysis] = useState<Analysis | null>(null)
 
 	const handleAnalyze = () => {
 		setAnalysis({
