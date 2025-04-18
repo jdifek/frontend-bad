@@ -1,6 +1,6 @@
 interface TelegramWebApp {
 	initData: string
-	initDataUnsafe: any
+	initDataUnsafe: { [key: string]: unknown }
 	MainButton: {
 		text: string
 		show: () => void
