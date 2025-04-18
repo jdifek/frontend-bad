@@ -4,10 +4,12 @@ import { Navigation } from './components/Navigation'
 import { ToastContainer } from 'react-toastify'
 
 export const App = () => {
-	useEffect(() => {
-		if (window.Telegram?.WebApp) {
-			window.Telegram.WebApp.ready()
-			window.Telegram.WebApp.fullscreen()  // Разворачиваем приложение на весь экран
+  useEffect(() => {
+    const tg = window.Telegram.WebApp;
+		if (tg) {
+			tg.ready()
+			tg.expand()
+      
 		}
 	}, [])
 
