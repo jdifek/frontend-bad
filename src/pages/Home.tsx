@@ -18,7 +18,7 @@ export const Home = () => {
   };
 
   return (
-    <div className='p-6 max-w-md mx-auto relative bg-blue-50'>
+    <div className='p-6 py-40 max-w-md mx-auto relative bg-blue-50'>
       <motion.h1
         className='text-3xl font-bold text-center mb-6 text-blue-900'
         initial={{ opacity: 0, y: -20 }}
