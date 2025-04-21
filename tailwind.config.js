@@ -1,5 +1,12 @@
+/** @type {import('tailwindcss').Config} */
 module.exports = {
-  content: ['./src/**/*.{js,jsx,ts,tsx}', './app/**/*.{js,jsx,ts,tsx}', './pages/**/*.{js,jsx,ts,tsx}'], theme: {
+  content: [
+    './src/**/*.{js,jsx,ts,tsx}',
+    './app/**/*.{js,jsx,ts,tsx}',
+    './pages/**/*.{js,jsx,ts,tsx}',
+    './components/**/*.{js,jsx,ts,tsx}',
+  ],
+  theme: {
     extend: {
       colors: {
         'primary-blue': '#0A3EE2',
@@ -12,13 +19,13 @@ module.exports = {
         'text-dark': '#333333',
       },
       boxShadow: {
-        'soft': '0 2px 8px rgba(0, 0, 0, 0.1)',
-        'medium': '0 4px 12px rgba(0, 0, 0, 0.15)',
+        soft: '0 2px 8px rgba(0, 0, 0, 0.1)',
+        medium: '0 4px 12px rgba(0, 0, 0, 0.15)',
       },
       borderRadius: {
-        'xl': '12px',
+        xl: '12px',
       },
     },
   },
   plugins: [],
-}
+};
