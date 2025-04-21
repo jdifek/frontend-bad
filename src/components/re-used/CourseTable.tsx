@@ -1,78 +1,64 @@
 import { motion } from 'framer-motion'
-import { IoPinOutline, IoTimeOutline, IoCalendarOutline } from 'react-icons/io5'
+import { IoSunny, IoPizzaOutline, IoMoonOutline } from 'react-icons/io5'
 
-interface Course {
-	supplements: { name: string }[];
-	schedule: {
-		morning: string[];
-		afternoon: string[];
-	};
-	duration: number;
-	suggestions?: string;
+type Course = {
+  goal: string
+  supplements: { name: string; dose?: string }[]
+  schedule: {
+    morning: string[]
+    afternoon: string[]
+    evening: string[]
+  }
+  duration: number
+  suggestions: string
 }
 
-export const CourseTable = ({ course }: { course: Course }) => {
-	const tableVariants = {
-		hidden: { opacity: 0, y: 20 },
-		visible: { opacity: 1, y: 0, transition: { duration: 0.5 } },
-	}
+type CourseTableProps = {
+  course: Course
+}
 
-	return (
-		<motion.div
-			className='mb-8'
-			variants={tableVariants}
-			initial='hidden'
-			animate='visible'
-		>
-			<h2 className='text-xl font-semibold mb-4 text-text-primary flex items-center'>
-				<IoPinOutline className='mr-2 text-sky-blue' size={22} /> Ваш курс
-			</h2>
-			<div className='bg-white rounded-xl shadow-md border border-sky-blue border-opacity-30 overflow-hidden'>
-				<table className='w-full border-collapse'>
-					<thead>
-						<tr className='bg-sky-blue bg-opacity-20 text-text-primary'>
-							<th className='p-3 text-left font-medium'>Добавка</th>
-							<th className='p-3 text-left font-medium'>Время</th>
-							<th className='p-3 text-left font-medium'>Длительность</th>
-							<th className='p-3 text-left font-medium'>Прогресс</th>
-						</tr>
-					</thead>
-					<tbody>
-						{course.supplements.map((supplement, index) => (
-							<tr key={index} className='border-b border-gray-100'>
-								<td className='p-3 text-text-primary font-medium'>
-									{supplement.name}
-								</td>
-								<td className='p-3 text-gray-600 flex items-center'>
-									<IoTimeOutline className='mr-2' />
-									{course.schedule.morning.includes(supplement.name)
-										? 'Утро'
-										: course.schedule.afternoon.includes(supplement.name)
-										? 'День'
-										: 'Вечер'}
-								</td>
-								<td className='p-3 text-gray-600 flex items-center'>
-									<IoCalendarOutline className='mr-2' />
-									{course.duration} дней
-								</td>
-								<td className='p-3'>
-									<div className='w-full bg-gray-100 rounded-full h-2'>
-										<div
-											className='bg-sky-blue h-2 rounded-full'
-											style={{ width: `${Math.random() * 100}%` }}
-										></div>
-									</div>
-								</td>
-							</tr>
-						))}
-					</tbody>
-				</table>
-				{course.suggestions && (
-					<div className='p-4 border-t border-gray-100'>
-						<p className='text-gray-600'>{course.suggestions}</p>
-					</div>
-				)}
-			</div>
-		</motion.div>
-	)
+export const CourseTable = ({ course }: CourseTableProps) => {
+  const scheduleItems = [
+    { time: 'Утро', items: course.schedule.morning, icon: <IoSunny className='text-bright-blue' /> },
+    { time: 'День', items: course.schedule.afternoon, icon: <IoPizzaOutline className='text-bright-blue' /> },
+    { time: 'Вечер', items: course.schedule.evening, icon: <IoMoonOutline className='text-bright-blue' /> },
+  ]
+
+  return (
+    <motion.div
+      className='bg-white rounded-xl p-6 shadow-medium mb-6 border border-light-blue'
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5 }}
+    >
+      <h2 className='text-lg font-semibold text-navy-blue mb-3'>{`Ваш курс для "${course.goal}"`}</h2>
+      <p className='text-text-light mb-4 text-sm'>{`Длительность: ${course.duration} дней`}</p>
+      
+      <div className='mb-6'>
+        <h3 className='text-md font-medium text-navy-blue mb-3'>Расписание приёма:</h3>
+        {scheduleItems.map((item, index) => (
+          <div key={index} className='mb-4'>
+            <div className='flex items-center mb-2'>
+              {item.icon}
+              <span className='ml-2 text-primary-blue font-medium'>{item.time}:</span>
+            </div>
+            {item.items.length > 0 ? (
+              <ul className='ml-8 list-disc text-text-light text-sm'>
+                {item.items.map((supplement, idx) => (
+                  <li key={idx}>{supplement}</li>
+                ))}
+              </ul>
+            ) : (
+              <p className='ml-8 text-text-light italic text-sm'>Нет добавок</p>
+            )}
+          </div>
+        ))}
+      </div>
+      
+      <div className='bg-light-blue p-4 rounded-lg'>
+        <h3 className='text-md font-medium text-navy-blue mb-2'>Рекомендации:</h3>
+        <p className='text-text-light text-sm'>{course.suggestions}</p>
+      </div>
+    </motion.div>
+  )
 }

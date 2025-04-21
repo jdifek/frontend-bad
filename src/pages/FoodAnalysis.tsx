@@ -27,7 +27,7 @@ export const FoodAnalysis = () => {
 	}
 
 	return (
-		<div className='p-4 max-w-md mx-auto'>
+		<div className='p-4 py-34 max-w-md mx-auto'>
 			<motion.h1
 				className='text-2xl font-bold mb-6 text-text-primary'
 				initial={{ opacity: 0, y: -20 }}

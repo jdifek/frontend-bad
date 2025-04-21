@@ -1,94 +1,84 @@
 import { useState } from 'react'
 import { motion } from 'framer-motion'
-import { IoPencil, IoCamera, IoAddCircleOutline } from 'react-icons/io5'
+import { IoAdd } from 'react-icons/io5'
 
-interface SupplementInputProps {
-	onAdd: (supplement: { name: string }) => void;
+type Supplement = {
+  name: string
+  dose?: string
 }
 
+type SupplementInputProps = {
+  onAdd: (supplement: Supplement) => void
+}
 export const SupplementInput = ({ onAdd }: SupplementInputProps) => {
-	const [supplement, setSupplement] = useState('')
-	const [method, setMethod] = useState('manual')
+  const [name, setName] = useState('')
+  const [selectedSupplements, setSelectedSupplements] = useState<string[]>([])
 
-	const handleAdd = () => {
-		if (supplement.trim()) {
-			onAdd({ name: supplement })
-			setSupplement('')
-		}
-	}
+  const handleAddSupplement = () => {
+    if (name.trim()) {
+      onAdd({ name: name.trim() })
+      setName('')
+    }
+  }
 
-	const buttonVariants = {
-		hover: { scale: 1.03, transition: { duration: 0.2 } },
-		tap: { scale: 0.97 },
-	}
+  
+  const commonSupplements = [
+    'Омега-3',
+    'Витамин D',
+    'Магний',
+    'Цинк',
+    'Пробиотики',
+    'Витамин С',
+  ]
 
-	return (
-		<motion.div
-			className='mb-8'
-			initial={{ opacity: 0, y: 20 }}
-			animate={{ opacity: 1, y: 0 }}
-			transition={{ duration: 0.5, delay: 0.2 }}
-		>
-			<h2 className='text-xl font-semibold mb-4 text-text-primary'>
-				Добавьте ваши добавки
-			</h2>
-			<div className='flex space-x-3 mb-5'>
-				<motion.button
-					onClick={() => setMethod('manual')}
-					className={`p-3 rounded-lg flex items-center justify-center flex-1 ${
-						method === 'manual'
-							? 'bg-lavender text-text-primary shadow-md'
-							: 'bg-lavender bg-opacity-30 text-text-primary'
-					} border border-white`}
-					variants={buttonVariants}
-					whileHover='hover'
-					whileTap='tap'
-				>
-					<IoPencil className='mr-2' size={18} /> Ввести вручную
-				</motion.button>
-				<motion.button
-					onClick={() => setMethod('photo')}
-					className={`p-3 rounded-lg flex items-center justify-center flex-1 ${
-						method === 'photo'
-							? 'bg-lavender text-text-primary shadow-md'
-							: 'bg-lavender bg-opacity-30 text-text-primary'
-					} border border-white`}
-					variants={buttonVariants}
-					whileHover='hover'
-					whileTap='tap'
-				>
-					<IoCamera className='mr-2' size={18} /> Загрузить фото
-				</motion.button>
-			</div>
-			{method === 'manual' ? (
-				<div className='flex space-x-2'>
-					<input
-						type='text'
-						value={supplement}
-						onChange={e => setSupplement(e.target.value)}
-						placeholder='Название добавки (например, Магний)'
-						className='flex-1 p-3 border rounded-lg border-gray-200 focus:outline-none focus:ring-2 focus:ring-lavender'
-					/>
-					<motion.button
-						onClick={handleAdd}
-						className='bg-lavender text-text-primary p-3 rounded-lg flex items-center justify-center'
-						variants={buttonVariants}
-						whileHover='hover'
-						whileTap='tap'
-					>
-						<IoAddCircleOutline size={22} />
-					</motion.button>
-				</div>
-			) : (
-				<div className='p-6 bg-lavender bg-opacity-20 rounded-xl border border-lavender'>
-					<div className='flex flex-col items-center justify-center'>
-						<IoCamera size={36} className='text-text-primary opacity-60 mb-3' />
-						<p className='text-text-primary text-center'>
-							Загрузка фото добавок (будет реализовано позже)
-						</p>
-					</div>
-				</div>
-			)}
-		</motion.div>
-	)
+  const handleQuickAdd = (supplement: string) => {
+    if (!selectedSupplements.includes(supplement)) {
+      onAdd({ name: supplement })
+      setSelectedSupplements([...selectedSupplements, supplement])
+    }
+  }
+
+  return (
+    <div className='mb-6'>
+      <h2 className='text-lg font-semibold text-navy-blue mb-3'>Добавьте добавки:</h2>
+      
+      <div className='flex mb-4'>
+        <input
+          type='text'
+          value={name}
+          onChange={e => setName(e.target.value)}
+          className='flex-grow p-3 rounded-l-xl border border-silver focus:border-primary-blue focus:outline-none bg-white'
+          placeholder='Название добавки'
+        />
+        <motion.button
+          onClick={handleAddSupplement}
+          className='bg-primary-blue text-white p-3 rounded-r-xl flex items-center justify-center'
+          disabled={!name.trim()}
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
+        >
+          <IoAdd size={20} />
+        </motion.button>
+      </div>
+      
+      <div className='grid grid-cols-3 gap-2'>
+        {commonSupplements.map(supplement => (
+          <motion.button
+            key={supplement}
+            onClick={() => handleQuickAdd(supplement)}
+            className={`p-2 text-xs rounded-lg border ${
+              selectedSupplements.includes(supplement)
+                ? 'bg-primary-blue text-white border-primary-blue'
+                : 'bg-white text-navy-blue border-silver hover:border-primary-blue'
+            } transition-all text-center shadow-soft`}
+            whileHover={{ scale: 1.03 }}
+            whileTap={{ scale: 0.97 }}
+            disabled={selectedSupplements.includes(supplement)}
+          >
+            {supplement}
+          </motion.button>
+        ))}
+      </div>
+    </div>
+  )
 }
