@@ -45,7 +45,7 @@ export const Navigation = () => {
       animate="visible"
       variants={navVariants}
     >
-      <div className='max-w-md mx-auto pt-[70px] px-4 pb-4 flex items-center justify-between'>
+      <div className='max-w-md mx-auto pt-[80px] px-4 pb-4 flex items-center justify-between'>
         <Link
           to='/'
           className='text-xl font-bold text-blue-900 flex items-center gap-2'
