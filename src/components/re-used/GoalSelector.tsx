@@ -2,12 +2,12 @@ import { useState } from 'react';
 import { motion } from 'framer-motion';
 
 const goals = [
-  'Улучшение сна',
-  'Повышение иммунитета',
-  'Энергия',
-  'Спокойствие',
-  'Здоровье суставов',
-  'Улучшение памяти',
+  'Повысить концентрацию',
+  'Энергия / бодрость',
+  'Улучшить сон',
+  'Поддержка иммунитета',
+  'Снижение веса',
+  'Другое',
 ];
 
 type GoalSelectorProps = {
@@ -16,10 +16,23 @@ type GoalSelectorProps = {
 
 export const GoalSelector = ({ onSelect }: GoalSelectorProps) => {
   const [selectedGoal, setSelectedGoal] = useState<string | null>(null);
+  const [customGoal, setCustomGoal] = useState<string>('');
 
   const handleSelect = (goal: string) => {
-    setSelectedGoal(goal);
-    onSelect(goal);
+    if (goal !== 'Другое') {
+      setSelectedGoal(goal);
+      setCustomGoal('');
+      onSelect(goal);
+    } else {
+      setSelectedGoal(goal);
+    }
+  };
+
+  const handleCustomGoalSubmit = () => {
+    if (customGoal.trim()) {
+      setSelectedGoal(customGoal);
+      onSelect(customGoal);
+    }
   };
 
   return (
@@ -42,6 +55,26 @@ export const GoalSelector = ({ onSelect }: GoalSelectorProps) => {
           </motion.button>
         ))}
       </div>
+      {selectedGoal === 'Другое' && (
+        <div className='mt-4'>
+          <input
+            type='text'
+            value={customGoal}
+            onChange={(e) => setCustomGoal(e.target.value)}
+            className='w-full p-3 rounded-xl border border-gray-300 focus:border-blue-600 focus:outline-none bg-white text-blue-900'
+            placeholder='Введите вашу цель'
+          />
+          <motion.button
+            onClick={handleCustomGoalSubmit}
+            className='mt-2 bg-blue-600 text-white p-3 rounded-xl w-full font-medium shadow-sm'
+            disabled={!customGoal.trim()}
+            whileHover={{ scale: 1.03 }}
+            whileTap={{ scale: 0.97 }}
+          >
+            Подтвердить
+          </motion.button>
+        </div>
+      )}
     </div>
   );
 };
