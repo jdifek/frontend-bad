@@ -33,7 +33,7 @@ export const FoodAnalysis = () => {
 		carbs: '',
 		suggestions: '',
 	})
-	const { user } = useAuth()
+	const { user, isLoading: authLoading } = useAuth()
 
 	const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
 		if (e.target.files && e.target.files[0]) {
@@ -44,7 +44,7 @@ export const FoodAnalysis = () => {
 	}
 
 	const handleAnalyze = async () => {
-		if (!user?.telegramId) {
+		if (authLoading || !user?.telegramId) {
 			setError('Пользователь не авторизован.')
 			return
 		}
@@ -88,7 +88,7 @@ export const FoodAnalysis = () => {
 	}
 
 	const handleManualInputSubmit = async () => {
-		if (!user?.telegramId) {
+		if (authLoading || !user?.telegramId) {
 			setError('Пользователь не авторизован.')
 			return
 		}
@@ -146,6 +146,10 @@ export const FoodAnalysis = () => {
 		} finally {
 			setLoading(false)
 		}
+	}
+
+	if (authLoading) {
+		return <div className='p-4 text-center text-blue-900'>Загрузка...</div>
 	}
 
 	return (

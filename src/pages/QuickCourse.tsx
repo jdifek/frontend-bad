@@ -35,11 +35,11 @@ export const QuickCourse = () => {
 	const [course, setCourse] = useState<Course | null>(null)
 	const [error, setError] = useState<string | null>(null)
 	const [loading, setLoading] = useState<boolean>(false)
-	const { user } = useAuth()
+	const { user, isLoading: authLoading } = useAuth()
 
 	useEffect(() => {
 		const fetchCourses = async () => {
-			if (!user?.telegramId) return
+			if (authLoading || !user?.telegramId) return
 
 			try {
 				const response = await $api.get(`/api/courses/${user.telegramId}`)
@@ -66,10 +66,10 @@ export const QuickCourse = () => {
 		}
 
 		fetchCourses()
-	}, [user])
+	}, [user, authLoading])
 
 	const handleAddSupplement = async (supplement: Supplement, file?: File) => {
-		if (!user?.telegramId) {
+		if (authLoading || !user?.telegramId) {
 			setError('Пользователь не авторизован.')
 			return
 		}
@@ -106,7 +106,7 @@ export const QuickCourse = () => {
 	}
 
 	const handleGenerateCourse = async () => {
-		if (!user?.telegramId) {
+		if (authLoading || !user?.telegramId) {
 			setError('Пользователь не авторизован.')
 			return
 		}
@@ -144,6 +144,10 @@ export const QuickCourse = () => {
 		} finally {
 			setLoading(false)
 		}
+	}
+
+	if (authLoading) {
+		return <div className='p-4 text-center text-blue-900'>Загрузка...</div>
 	}
 
 	return (

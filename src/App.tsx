@@ -5,7 +5,7 @@ import { ToastContainer } from 'react-toastify'
 import { useAuth } from './helpers/context/AuthContext'
 
 export const App = () => {
-	const { login } = useAuth()
+	const { login, isLoading } = useAuth()
 
 	useEffect(() => {
 		const tg = window.Telegram?.WebApp
@@ -37,6 +37,14 @@ export const App = () => {
 			console.log('Telegram.WebApp не доступен')
 		}
 	}, [login])
+
+	if (isLoading) {
+		return (
+			<div className='min-h-screen bg-blue-50 flex items-center justify-center'>
+				Загрузка...
+			</div>
+		)
+	}
 
 	return (
 		<div className='min-h-screen bg-blue-50'>

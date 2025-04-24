@@ -17,6 +17,7 @@ interface AuthContextType {
 	user: User | null
 	accessToken: string | null
 	refreshToken: string | null
+	isLoading: boolean
 	login: (telegramData: {
 		telegramId: string
 		name?: string
@@ -28,6 +29,7 @@ const AuthContext = createContext<AuthContextType>({
 	user: null,
 	accessToken: null,
 	refreshToken: null,
+	isLoading: false,
 	login: async () => {},
 })
 
@@ -39,6 +41,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
 	const [user, setUser] = useState<User | null>(null)
 	const [accessToken, setAccessToken] = useState<string | null>(null)
 	const [refreshToken, setRefreshToken] = useState<string | null>(null)
+	const [isLoading, setIsLoading] = useState<boolean>(false)
 
 	const login = async (telegramData: {
 		telegramId: string
@@ -46,6 +49,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
 		photoUrl?: string
 	}) => {
 		try {
+			setIsLoading(true)
 			const response = await $api.post('/api/auth/login', telegramData)
 			setUser(response.data.user)
 			setAccessToken(response.data.accessToken)
@@ -54,6 +58,8 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
 			localStorage.setItem('accessToken', response.data.accessToken)
 		} catch (error) {
 			console.error('Error during login:', error)
+		} finally {
+			setIsLoading(false)
 		}
 	}
 
@@ -82,11 +88,18 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
 					localStorage.removeItem('refreshToken')
 					localStorage.removeItem('accessToken')
 				})
+				.finally(() => {
+					setIsLoading(false)
+				})
+		} else {
+			setIsLoading(false)
 		}
 	}, [])
 
 	return (
-		<AuthContext.Provider value={{ user, accessToken, refreshToken, login }}>
+		<AuthContext.Provider
+			value={{ user, accessToken, refreshToken, isLoading, login }}
+		>
 			{children}
 		</AuthContext.Provider>
 	)

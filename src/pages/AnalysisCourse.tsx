@@ -32,10 +32,10 @@ export const AnalysisCourse = () => {
 	const [course, setCourse] = useState<Course | null>(null)
 	const [error, setError] = useState<string | null>(null)
 	const [loading, setLoading] = useState<boolean>(false)
-	const { user } = useAuth()
+	const { user, isLoading: authLoading } = useAuth()
 
 	const handleGenerateCourse = async () => {
-		if (!user?.telegramId) {
+		if (authLoading || !user?.telegramId) {
 			setError('Пользователь не авторизован')
 			return
 		}
@@ -137,6 +137,10 @@ export const AnalysisCourse = () => {
 				transition: Slide,
 			})
 		}
+	}
+
+	if (authLoading) {
+		return <div className='p-4 text-center text-blue-900'>Загрузка...</div>
 	}
 
 	return (
