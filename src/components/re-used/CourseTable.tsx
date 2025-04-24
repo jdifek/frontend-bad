@@ -2,16 +2,22 @@ import { useState } from 'react'
 import { motion } from 'framer-motion'
 import { IoSunny, IoPizzaOutline, IoMoonOutline } from 'react-icons/io5'
 
+type Supplement = {
+	name: string
+	dose?: string
+	time?: string
+}
+
 type Course = {
 	id: string
 	goal: string
-	supplements: { name: string; dose?: string }[]
+	supplements: Supplement[]
 	schedule: {
 		morning: string[]
 		afternoon: string[]
 		evening: string[]
 	}
-	duration: number
+	duration: number | null
 	suggestions: string
 	warnings: string
 	questions: string[]
@@ -24,7 +30,7 @@ type CourseTableProps = {
 }
 
 export const CourseTable = ({ course }: CourseTableProps) => {
-	const [duration, setDuration] = useState<number>(course.duration)
+	const [duration, setDuration] = useState<number>(course.duration || 30)
 	const [progress, setProgress] = useState<{ [key: string]: number }>(
 		course.supplements.reduce((acc, supp) => ({ ...acc, [supp.name]: 0 }), {})
 	)
@@ -93,41 +99,47 @@ export const CourseTable = ({ course }: CourseTableProps) => {
 						</div>
 						{item.items.length > 0 ? (
 							<ul className='ml-8 text-gray-600 text-sm'>
-								{item.items.map((supplement, idx) => (
-									<li key={idx} className='mb-2'>
-										<div className='flex items-center justify-between'>
-											<span>
-												{supplement}{' '}
-												{course.supplements.find(s => s.name === supplement)
-													?.dose || ''}
-											</span>
-											<div className='flex items-center space-x-2'>
-												<motion.button
-													onClick={() => handleProgressUpdate(supplement, -10)}
-													className='text-blue-600'
-													whileHover={{ scale: 1.1 }}
-													whileTap={{ scale: 0.9 }}
-												>
-													-
-												</motion.button>
-												<div className='w-24 h-2 bg-gray-200 rounded-full'>
-													<div
-														className='h-full bg-blue-600 rounded-full'
-														style={{ width: `${progress[supplement]}%` }}
-													/>
+								{item.items.map((supplement, idx) => {
+									const suppData = course.supplements.find(
+										s => s.name === supplement
+									)
+									return (
+										<li key={idx} className='mb-2'>
+											<div className='flex items-center justify-between'>
+												<span>
+													{supplement}{' '}
+													{suppData?.dose ? `(${suppData.dose})` : ''}
+												</span>
+												<div className='flex items-center space-x-2'>
+													<motion.button
+														onClick={() =>
+															handleProgressUpdate(supplement, -10)
+														}
+														className='text-blue-600'
+														whileHover={{ scale: 1.1 }}
+														whileTap={{ scale: 0.9 }}
+													>
+														-
+													</motion.button>
+													<div className='w-24 h-2 bg-gray-200 rounded-full'>
+														<div
+															className='h-full bg-blue-600 rounded-full'
+															style={{ width: `${progress[supplement] || 0}%` }}
+														/>
+													</div>
+													<motion.button
+														onClick={() => handleProgressUpdate(supplement, 10)}
+														className='text-blue-600'
+														whileHover={{ scale: 1.1 }}
+														whileTap={{ scale: 0.9 }}
+													>
+														+
+													</motion.button>
 												</div>
-												<motion.button
-													onClick={() => handleProgressUpdate(supplement, 10)}
-													className='text-blue-600'
-													whileHover={{ scale: 1.1 }}
-													whileTap={{ scale: 0.9 }}
-												>
-													+
-												</motion.button>
 											</div>
-										</div>
-									</li>
-								))}
+										</li>
+									)
+								})}
 							</ul>
 						) : (
 							<p className='ml-8 text-gray-600 italic text-sm'>Нет добавок</p>

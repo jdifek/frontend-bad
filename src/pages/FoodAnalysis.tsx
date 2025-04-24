@@ -4,6 +4,7 @@ import { IoCamera, IoPencil } from 'react-icons/io5'
 import { FoodAnalysisResult } from '../components/FoodAnalysisResult'
 import $api from '../api/http'
 import { Slide, toast } from 'react-toastify'
+import { useAuth } from '../helpers/context/AuthContext'
 
 type Analysis = {
 	dish: string
@@ -32,8 +33,7 @@ export const FoodAnalysis = () => {
 		carbs: '',
 		suggestions: '',
 	})
-
-	const telegramId = '6464907797'
+	const { user } = useAuth()
 
 	const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
 		if (e.target.files && e.target.files[0]) {
@@ -44,6 +44,10 @@ export const FoodAnalysis = () => {
 	}
 
 	const handleAnalyze = async () => {
+		if (!user?.telegramId) {
+			setError('Пользователь не авторизован.')
+			return
+		}
 		if (!photo) {
 			setError('Пожалуйста, загрузите фото еды.')
 			return
@@ -54,7 +58,7 @@ export const FoodAnalysis = () => {
 			setError(null)
 
 			const formData = new FormData()
-			formData.append('telegramId', telegramId)
+			formData.append('telegramId', user.telegramId)
 			formData.append('photo', photo)
 
 			const res = await $api.post('/api/food-analysis/photo', formData, {
@@ -84,6 +88,10 @@ export const FoodAnalysis = () => {
 	}
 
 	const handleManualInputSubmit = async () => {
+		if (!user?.telegramId) {
+			setError('Пользователь не авторизован.')
+			return
+		}
 		if (
 			!manualInput.dish ||
 			!manualInput.calories ||
@@ -100,7 +108,7 @@ export const FoodAnalysis = () => {
 			setError(null)
 
 			const res = await $api.post('/api/food-analysis/manual', {
-				telegramId,
+				telegramId: user.telegramId,
 				dish: manualInput.dish,
 				calories: parseInt(manualInput.calories),
 				nutrients: {

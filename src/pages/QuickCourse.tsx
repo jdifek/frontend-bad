@@ -4,10 +4,12 @@ import { GoalSelector } from '../components/re-used/GoalSelector'
 import { SupplementInput } from '../components/re-used/SupplementInput'
 import { CourseTable } from '../components/re-used/CourseTable'
 import $api from '../api/http'
+import { useAuth } from '../helpers/context/AuthContext'
 
 type Supplement = {
 	name: string
 	dose?: string
+	time?: string
 }
 
 type Course = {
@@ -19,7 +21,7 @@ type Course = {
 		afternoon: string[]
 		evening: string[]
 	}
-	duration: number
+	duration: number | null
 	suggestions: string
 	warnings: string
 	repeatAnalysis: string
@@ -33,18 +35,19 @@ export const QuickCourse = () => {
 	const [course, setCourse] = useState<Course | null>(null)
 	const [error, setError] = useState<string | null>(null)
 	const [loading, setLoading] = useState<boolean>(false)
-
-	// для тестов
-	const telegramId = '6464907797'
+	const { user } = useAuth()
 
 	useEffect(() => {
 		const fetchCourses = async () => {
+			if (!user?.telegramId) return
+
 			try {
-				const response = await $api.get(`/api/courses/${telegramId}`)
+				const response = await $api.get(`/api/courses/${user.telegramId}`)
 				if (response.data.length > 0) {
 					const latestCourse = response.data[0]
 					setCourse({
 						...latestCourse,
+						supplements: latestCourse.supplements || [],
 						suggestions:
 							latestCourse.suggestions ||
 							'Следуйте расписанию для достижения цели.',
@@ -52,6 +55,8 @@ export const QuickCourse = () => {
 						questions: latestCourse.questions || [],
 						disclaimer:
 							latestCourse.disclaimer || 'ИИ-нутрициолог не заменяет врача.',
+						repeatAnalysis: latestCourse.repeatAnalysis || '',
+						duration: latestCourse.duration || 30, // Значение по умолчанию
 					})
 				}
 			} catch (err) {
@@ -61,25 +66,28 @@ export const QuickCourse = () => {
 		}
 
 		fetchCourses()
-	}, [])
+	}, [user])
 
 	const handleAddSupplement = async (supplement: Supplement, file?: File) => {
+		if (!user?.telegramId) {
+			setError('Пользователь не авторизован.')
+			return
+		}
+
 		try {
 			setError(null)
 			let newSupplement
 			if (file) {
-				// Загрузка фото
 				const formData = new FormData()
-				formData.append('telegramId', telegramId)
+				formData.append('telegramId', user.telegramId)
 				formData.append('photo', file)
 				const response = await $api.post('/api/courses/supplements', formData, {
 					headers: { 'Content-Type': 'multipart/form-data' },
 				})
 				newSupplement = response.data.supplement
 			} else {
-				// Ручной ввод
 				const response = await $api.post('/api/courses/supplements', {
-					telegramId,
+					telegramId: user.telegramId,
 					name: supplement.name,
 				})
 				newSupplement = response.data.supplement
@@ -98,6 +106,11 @@ export const QuickCourse = () => {
 	}
 
 	const handleGenerateCourse = async () => {
+		if (!user?.telegramId) {
+			setError('Пользователь не авторизован.')
+			return
+		}
+
 		if (!goal || supplements.length === 0) {
 			setError('Выберите цель и добавьте хотя бы одну добавку.')
 			return
@@ -107,15 +120,21 @@ export const QuickCourse = () => {
 			setLoading(true)
 			setError(null)
 			const response = await $api.post('/api/courses', {
-				telegramId,
+				telegramId: user.telegramId,
 				goal,
 			})
 			setCourse({
 				...response.data.course,
-				suggestions: response.data.suggestions,
-				warnings: response.data.warnings,
-				questions: response.data.questions,
-				disclaimer: response.data.disclaimer,
+				supplements: response.data.course.supplements || [],
+				suggestions:
+					response.data.suggestions ||
+					'Следуйте расписанию для достижения цели.',
+				warnings: response.data.warnings || 'Проконсультируйтесь с врачом.',
+				questions: response.data.questions || [],
+				disclaimer:
+					response.data.disclaimer || 'ИИ-нутрициолог не заменяет врача.',
+				repeatAnalysis: response.data.repeatAnalysis || '',
+				duration: response.data.course.duration || 30, // Значение по умолчанию
 			})
 		} catch (err) {
 			console.error('Error generating course:', err)
@@ -164,3 +183,5 @@ export const QuickCourse = () => {
 		</div>
 	)
 }
+
+export default QuickCourse

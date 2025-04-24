@@ -6,6 +6,7 @@ import { CourseTable } from '../components/re-used/CourseTable'
 import { IoCalendarOutline } from 'react-icons/io5'
 import { Slide, toast } from 'react-toastify'
 import $api from '../api/http'
+import { useAuth } from '../helpers/context/AuthContext'
 
 type Course = {
 	id: string
@@ -31,11 +32,14 @@ export const AnalysisCourse = () => {
 	const [course, setCourse] = useState<Course | null>(null)
 	const [error, setError] = useState<string | null>(null)
 	const [loading, setLoading] = useState<boolean>(false)
-
-	// Для тестов
-	const telegramId = '6464907797'
+	const { user } = useAuth()
 
 	const handleGenerateCourse = async () => {
+		if (!user?.telegramId) {
+			setError('Пользователь не авторизован')
+			return
+		}
+
 		if (!goal || biomarkers.length === 0) {
 			setError('Выберите цель и отметьте хотя бы один биомаркер.')
 			return
@@ -46,7 +50,7 @@ export const AnalysisCourse = () => {
 			setError(null)
 
 			const formData = new FormData()
-			formData.append('telegramId', telegramId)
+			formData.append('telegramId', user.telegramId)
 			formData.append('goal', goal)
 			formData.append('checklist', JSON.stringify(biomarkers))
 			if (photo) {
@@ -104,7 +108,7 @@ export const AnalysisCourse = () => {
 					: 'Как ты себя сегодня чувствуешь? Это поможет уточнить твой курс.'
 
 			await $api.post('/api/reminders', {
-				telegramId,
+				telegramId: user?.telegramId,
 				courseId: course.id,
 				type,
 				message,
