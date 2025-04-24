@@ -59,7 +59,7 @@ export const App = () => {
         console.log('tgWebAppData не найден в URL');
       }
     }
-  }, [login]);
+  }, []);
 	if (isLoading) {
 		return (
 			<div className='min-h-screen bg-blue-50 flex items-center justify-center'>
