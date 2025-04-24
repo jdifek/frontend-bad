@@ -39,10 +39,18 @@ export const QuickCourse = () => {
 
 	useEffect(() => {
 		const fetchCourses = async () => {
-			if (authLoading || !user?.telegramId) return
+			console.log('fetchCourses called with:', { authLoading, user })
+			if (authLoading || !user?.telegramId) {
+				console.log('Skipping fetchCourses: authLoading or no user', {
+					authLoading,
+					user,
+				})
+				return
+			}
 
 			try {
 				const response = await $api.get(`/api/courses/${user.telegramId}`)
+				console.log('Course data:', response.data)
 				if (response.data.length > 0) {
 					const latestCourse = response.data[0]
 					setCourse({
@@ -56,11 +64,15 @@ export const QuickCourse = () => {
 						disclaimer:
 							latestCourse.disclaimer || 'ИИ-нутрициолог не заменяет врача.',
 						repeatAnalysis: latestCourse.repeatAnalysis || '',
-						duration: latestCourse.duration || 30, // Значение по умолчанию
+						duration: latestCourse.duration || 30,
 					})
 				}
-			} catch (err) {
-				console.error('Error fetching courses:', err)
+			} catch (err: any) {
+				console.error('Error fetching courses:', {
+					message: err.message,
+					response: err.response?.data,
+					status: err.response?.status,
+				})
 				setError('Не удалось загрузить курсы. Попробуйте позже.')
 			}
 		}
@@ -70,7 +82,9 @@ export const QuickCourse = () => {
 
 	const handleAddSupplement = async (supplement: Supplement, file?: File) => {
 		if (authLoading || !user?.telegramId) {
-			setError('Пользователь не авторизован.')
+			setError(
+				'Пользователь не авторизован. Попробуйте перезагрузить приложение.'
+			)
 			return
 		}
 
@@ -93,10 +107,14 @@ export const QuickCourse = () => {
 				newSupplement = response.data.supplement
 			}
 			setSupplements([...supplements, newSupplement])
-		} catch (err) {
-			console.error('Error adding supplement:', err)
+		} catch (err: any) {
+			console.error('Error adding supplement:', {
+				message: err.message,
+				response: err.response?.data,
+				status: err.response?.status,
+			})
 			setError(
-				'Не удалось добавить добавку. Убедитесь, что API-ключ настроен, и попробуйте снова.'
+				'Не удалось добавить добавку. Попробуйте снова или перезагрузите приложение.'
 			)
 		}
 	}
@@ -107,7 +125,9 @@ export const QuickCourse = () => {
 
 	const handleGenerateCourse = async () => {
 		if (authLoading || !user?.telegramId) {
-			setError('Пользователь не авторизован.')
+			setError(
+				'Пользователь не авторизован. Попробуйте перезагрузить приложение.'
+			)
 			return
 		}
 
@@ -123,6 +143,7 @@ export const QuickCourse = () => {
 				telegramId: user.telegramId,
 				goal,
 			})
+			console.log('Generated course:', response.data)
 			setCourse({
 				...response.data.course,
 				supplements: response.data.course.supplements || [],
@@ -134,12 +155,16 @@ export const QuickCourse = () => {
 				disclaimer:
 					response.data.disclaimer || 'ИИ-нутрициолог не заменяет врача.',
 				repeatAnalysis: response.data.repeatAnalysis || '',
-				duration: response.data.course.duration || 30, // Значение по умолчанию
+				duration: response.data.course.duration || 30,
 			})
-		} catch (err) {
-			console.error('Error generating course:', err)
+		} catch (err: any) {
+			console.error('Error generating course:', {
+				message: err.message,
+				response: err.response?.data,
+				status: err.response?.status,
+			})
 			setError(
-				'Не удалось сгенерировать курс. Убедитесь, что API-ключ настроен, и попробуйте позже.'
+				'Не удалось сгенерировать курс. Попробуйте снова или перезагрузите приложение.'
 			)
 		} finally {
 			setLoading(false)
@@ -148,6 +173,14 @@ export const QuickCourse = () => {
 
 	if (authLoading) {
 		return <div className='p-4 text-center text-blue-900'>Загрузка...</div>
+	}
+
+	if (!user) {
+		return (
+			<div className='p-4 text-center text-red-700'>
+				Ошибка авторизации. Попробуйте перезагрузить приложение или войти снова.
+			</div>
+		)
 	}
 
 	return (

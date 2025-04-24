@@ -25,6 +25,7 @@ export const App = () => {
 
 			const initData = tg.initDataUnsafe
 			if (initData?.user) {
+				console.log('Данные пользователя:', initData.user)
 				login({
 					telegramId: initData.user.id.toString(),
 					name: initData.user.first_name || initData.user.username || 'User',
@@ -34,9 +35,34 @@ export const App = () => {
 				console.log('User data not available in initData')
 			}
 		} else {
-			console.log('Telegram.WebApp не доступен')
+			console.log('Telegram.WebApp не доступен. Окружение:', {
+				windowLocation: window.location.href,
+				userAgent: navigator.userAgent,
+			})
+
+			const hash = window.location.hash
+			const params = new URLSearchParams(hash.replace('#', ''))
+			const tgWebAppData = params.get('tgWebAppData')
+			if (tgWebAppData) {
+				const decodedData = decodeURIComponent(tgWebAppData)
+				const dataParams = new URLSearchParams(decodedData)
+				const userParam = dataParams.get('user')
+				const user = userParam
+					? JSON.parse(decodeURIComponent(userParam))
+					: null
+				if (user) {
+					console.log('Извлечённые данные пользователя:', user)
+					login({
+						telegramId: user.id.toString(),
+						name: user.first_name || user.username || 'User',
+						photoUrl: user.photo_url || undefined,
+					})
+				}
+			} else {
+				console.log('tgWebAppData не найден в URL')
+			}
 		}
-	}, [login])
+	}, [])
 
 	if (isLoading) {
 		return (
