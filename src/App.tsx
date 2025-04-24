@@ -6,49 +6,60 @@ import { useAuth } from './helpers/context/AuthContext'
 
 export const App = () => {
 	const { login, isLoading } = useAuth()
-
-	useEffect(() => {
-    const checkTelegramWebApp = () => {
-      const tg = window.Telegram?.WebApp;
+  useEffect(() => {
+    const tg = window.Telegram?.WebApp;
   
-      if (tg) {
-        console.log('Telegram.WebApp найден, версия:', tg.version);
-        tg.ready();
-        if (tg.isVersionAtLeast('8.0')) {
-          tg.requestFullscreen();
-          tg.setHeaderColor('#000000');
-        } else {
-          tg.expand();
-          console.log(
-            'Bot API ниже 8.0, используется expand(). Текущая версия Telegram:',
-            tg.version
-          );
-        }
+    if (tg) {
+      tg.ready();
+      if (tg.isVersionAtLeast('8.0')) {
+        tg.requestFullscreen();
+        tg.setHeaderColor('#000000');
+      } else {
+        tg.expand();
+        console.log(
+          'Bot API ниже 8.0, используется expand(). Текущая версия Telegram:',
+          tg.version
+        );
+      }
   
-        const initData = tg.initDataUnsafe;
-        if (initData?.user) {
-          console.log('Данные пользователя:', initData.user);
+      const initData = tg.initDataUnsafe;
+      if (initData?.user) {
+        console.log('Данные пользователя:', initData.user);
+        login({
+          telegramId: initData.user.id.toString(),
+          name: initData.user.first_name || initData.user.username || 'User',
+          photoUrl: initData.user.photo_url || undefined,
+        });
+      } else {
+        console.log('User data not available in initData');
+      }
+    } else {
+      console.log('Telegram.WebApp не доступен. Окружение:', {
+        windowLocation: window.location.href,
+        userAgent: navigator.userAgent,
+      });
+  
+      const hash = window.location.hash;
+      const params = new URLSearchParams(hash.replace('#', ''));
+      const tgWebAppData = params.get('tgWebAppData');
+      if (tgWebAppData) {
+        const decodedData = decodeURIComponent(tgWebAppData);
+        const dataParams = new URLSearchParams(decodedData);
+        const userParam = dataParams.get('user');
+        const user = userParam ? JSON.parse(decodeURIComponent(userParam)) : null;
+        if (user) {
+          console.log('Извлечённые данные пользователя:', user);
           login({
-            telegramId: initData.user.id.toString(),
-            name: initData.user.first_name || initData.user.username || 'User',
-            photoUrl: initData.user.photo_url || undefined,
+            telegramId: user.id.toString(),
+            name: user.first_name || user.username || 'User',
+            photoUrl: user.photo_url || undefined,
           });
-        } else {
-          console.log('User data not available in initData');
         }
       } else {
-        console.log('Telegram.WebApp не доступен. Окружение:', {
-          windowLocation: window.location.href,
-          userAgent: navigator.userAgent,
-        });
-        // Повторяем проверку через 500мс
-        setTimeout(checkTelegramWebApp, 500);
+        console.log('tgWebAppData не найден в URL');
       }
-    };
-  
-    checkTelegramWebApp();
+    }
   }, [login]);
-
 	if (isLoading) {
 		return (
 			<div className='min-h-screen bg-blue-50 flex items-center justify-center'>
