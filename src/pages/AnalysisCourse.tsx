@@ -8,10 +8,16 @@ import { Slide, toast } from 'react-toastify'
 import $api from '../api/http'
 import { useAuth } from '../helpers/context/AuthContext'
 
+type Supplement = {
+	name: string
+	dose?: string
+	time?: string
+}
+
 type Course = {
 	id: string
 	goal: string
-	supplements: { name: string; dose: string }[]
+	supplements: Supplement[]
 	schedule: {
 		morning: string[]
 		afternoon: string[]

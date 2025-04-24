@@ -67,12 +67,8 @@ export const QuickCourse = () => {
 						duration: latestCourse.duration || 30,
 					})
 				}
-			} catch (err: any) {
-				console.error('Error fetching courses:', {
-					message: err.message,
-					response: err.response?.data,
-					status: err.response?.status,
-				})
+			} catch (error) {
+				console.error('Error fetching courses:', error)
 				setError('Не удалось загрузить курсы. Попробуйте позже.')
 			}
 		}
@@ -107,12 +103,8 @@ export const QuickCourse = () => {
 				newSupplement = response.data.supplement
 			}
 			setSupplements([...supplements, newSupplement])
-		} catch (err: any) {
-			console.error('Error adding supplement:', {
-				message: err.message,
-				response: err.response?.data,
-				status: err.response?.status,
-			})
+		} catch (error) {
+			console.error('Error adding supplement:', error)
 			setError(
 				'Не удалось добавить добавку. Попробуйте снова или перезагрузите приложение.'
 			)
@@ -157,12 +149,8 @@ export const QuickCourse = () => {
 				repeatAnalysis: response.data.repeatAnalysis || '',
 				duration: response.data.course.duration || 30,
 			})
-		} catch (err: any) {
-			console.error('Error generating course:', {
-				message: err.message,
-				response: err.response?.data,
-				status: err.response?.status,
-			})
+		} catch (error) {
+			console.error('Error generating course:', error)
 			setError(
 				'Не удалось сгенерировать курс. Попробуйте снова или перезагрузите приложение.'
 			)

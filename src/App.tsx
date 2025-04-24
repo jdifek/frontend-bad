@@ -24,18 +24,21 @@ export const App = () => {
 			}
 
 			const initData = tg.initDataUnsafe
+			console.log('Telegram initData:', JSON.stringify(initData, null, 2))
 			if (initData?.user) {
-				console.log('Данные пользователя:', initData.user)
+				console.log('User data extracted:', initData.user)
 				login({
 					telegramId: initData.user.id.toString(),
 					name: initData.user.first_name || initData.user.username || 'User',
 					photoUrl: initData.user.photo_url || undefined,
+				}).catch(error => {
+					console.error('Login error:', error.message)
 				})
 			} else {
-				console.log('User data not available in initData')
+				console.warn('User data not available in initData')
 			}
 		} else {
-			console.log('Telegram.WebApp не доступен. Окружение:', {
+			console.warn('Telegram.WebApp is not available. Environment:', {
 				windowLocation: window.location.href,
 				userAgent: navigator.userAgent,
 			})
@@ -51,18 +54,22 @@ export const App = () => {
 					? JSON.parse(decodeURIComponent(userParam))
 					: null
 				if (user) {
-					console.log('Извлечённые данные пользователя:', user)
+					console.log('Extracted user data from tgWebAppData:', user)
 					login({
 						telegramId: user.id.toString(),
 						name: user.first_name || user.username || 'User',
 						photoUrl: user.photo_url || undefined,
+					}).catch(error => {
+						console.error('Login error:', error.message)
 					})
+				} else {
+					console.warn('No user data in tgWebAppData')
 				}
 			} else {
-				console.log('tgWebAppData не найден в URL')
+				console.warn('tgWebAppData not found in URL')
 			}
 		}
-	}, [])
+	}, [login])
 
 	if (isLoading) {
 		return (
@@ -84,3 +91,90 @@ export const App = () => {
 }
 
 export default App
+
+// import { useEffect } from 'react'
+// import { RoutesConfig } from './routes'
+// import { Navigation } from './components/Navigation'
+// import { ToastContainer } from 'react-toastify'
+// import { useAuth } from './helpers/context/AuthContext'
+
+// export const App = () => {
+// 	const { login, isLoading } = useAuth()
+
+// 	useEffect(() => {
+// 		const tg = window.Telegram?.WebApp
+
+// 		if (tg) {
+// 			tg.ready()
+// 			if (tg.isVersionAtLeast('8.0')) {
+// 				tg.requestFullscreen()
+// 				tg.setHeaderColor('#000000')
+// 			} else {
+// 				tg.expand()
+// 				console.log(
+// 					'Bot API ниже 8.0, используется expand(). Текущая версия Telegram:',
+// 					tg.version
+// 				)
+// 			}
+
+// 			const initData = tg.initDataUnsafe
+// 			if (initData?.user) {
+// 				console.log('Данные пользователя:', initData.user)
+// 				login({
+// 					telegramId: initData.user.id.toString(),
+// 					name: initData.user.first_name || initData.user.username || 'User',
+// 					photoUrl: initData.user.photo_url || undefined,
+// 				})
+// 			} else {
+// 				console.log('User data not available in initData')
+// 			}
+// 		} else {
+// 			console.log('Telegram.WebApp не доступен. Окружение:', {
+// 				windowLocation: window.location.href,
+// 				userAgent: navigator.userAgent,
+// 			})
+
+// 			const hash = window.location.hash
+// 			const params = new URLSearchParams(hash.replace('#', ''))
+// 			const tgWebAppData = params.get('tgWebAppData')
+// 			if (tgWebAppData) {
+// 				const decodedData = decodeURIComponent(tgWebAppData)
+// 				const dataParams = new URLSearchParams(decodedData)
+// 				const userParam = dataParams.get('user')
+// 				const user = userParam
+// 					? JSON.parse(decodeURIComponent(userParam))
+// 					: null
+// 				if (user) {
+// 					console.log('Извлечённые данные пользователя:', user)
+// 					login({
+// 						telegramId: user.id.toString(),
+// 						name: user.first_name || user.username || 'User',
+// 						photoUrl: user.photo_url || undefined,
+// 					})
+// 				}
+// 			} else {
+// 				console.log('tgWebAppData не найден в URL')
+// 			}
+// 		}
+// 	}, [])
+
+// 	if (isLoading) {
+// 		return (
+// 			<div className='min-h-screen bg-blue-50 flex items-center justify-center'>
+// 				Загрузка...
+// 			</div>
+// 		)
+// 	}
+
+// 	return (
+// 		<div className='min-h-screen bg-blue-50'>
+// 			<Navigation />
+// 			<div className='max-w-5xl mx-auto p-4'>
+// 				<RoutesConfig />
+// 			</div>
+// 			<ToastContainer />
+// 		</div>
+// 	)
+// }
+
+// export default App
