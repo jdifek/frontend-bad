@@ -69,8 +69,8 @@ export const App = () => {
 				console.warn('tgWebAppData not found in URL')
 			}
 		}
-	}, [login])
-  
+	}, [])
+
 
 	if (isLoading) {
 		return (
