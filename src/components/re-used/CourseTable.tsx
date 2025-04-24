@@ -56,7 +56,7 @@ export const CourseTable = ({ course }: CourseTableProps) => {
 
 	return (
 		<motion.div
-			className='bg-white rounded-xl p-6 shadow-md mb-6 border border-blue-50'
+			className='bg-white rounded-xl p-6 shadow-md my-6 border border-blue-50'
 			initial={{ opacity: 0, y: 20 }}
 			animate={{ opacity: 1, y: 0 }}
 			transition={{ duration: 0.5 }}
