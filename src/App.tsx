@@ -8,45 +8,45 @@ export const App = () => {
 	const { login, isLoading } = useAuth()
 
 	useEffect(() => {
-    const tg = window.Telegram?.WebApp;
+    const checkTelegramWebApp = () => {
+      const tg = window.Telegram?.WebApp;
   
-    if (tg) {
-      console.log('Telegram.WebApp найден, версия:', tg.version);
-      tg.ready();
-      if (tg.isVersionAtLeast('8.0')) {
-        tg.requestFullscreen();
-        tg.setHeaderColor('#000000');
+      if (tg) {
+        console.log('Telegram.WebApp найден, версия:', tg.version);
+        tg.ready();
+        if (tg.isVersionAtLeast('8.0')) {
+          tg.requestFullscreen();
+          tg.setHeaderColor('#000000');
+        } else {
+          tg.expand();
+          console.log(
+            'Bot API ниже 8.0, используется expand(). Текущая версия Telegram:',
+            tg.version
+          );
+        }
+  
+        const initData = tg.initDataUnsafe;
+        if (initData?.user) {
+          console.log('Данные пользователя:', initData.user);
+          login({
+            telegramId: initData.user.id.toString(),
+            name: initData.user.first_name || initData.user.username || 'User',
+            photoUrl: initData.user.photo_url || undefined,
+          });
+        } else {
+          console.log('User data not available in initData');
+        }
       } else {
-        tg.expand();
-        console.log(
-          'Bot API ниже 8.0, используется expand(). Текущая версия Telegram:',
-          tg.version
-        );
-      }
-  
-      const initData = tg.initDataUnsafe;
-      if (initData?.user) {
-        console.log('Данные пользователя:', initData.user);
-        login({
-          telegramId: initData.user.id.toString(),
-          name: initData.user.first_name || initData.user.username || 'User',
-          photoUrl: initData.user.photo_url || undefined,
+        console.log('Telegram.WebApp не доступен. Окружение:', {
+          windowLocation: window.location.href,
+          userAgent: navigator.userAgent,
         });
-      } else {
-        console.log('User data not available in initData');
+        // Повторяем проверку через 500мс
+        setTimeout(checkTelegramWebApp, 500);
       }
-    } else {
-      console.log('Telegram.WebApp не доступен. Окружение:', {
-        windowLocation: window.location.href,
-        userAgent: navigator.userAgent,
-      });
-      // Для локальной разработки можно использовать тестовые данные
-      login({
-        telegramId: '6464907797',
-        name: 'Test User',
-        photoUrl: undefined,
-      });
-    }
+    };
+  
+    checkTelegramWebApp();
   }, [login]);
 
 	if (isLoading) {
