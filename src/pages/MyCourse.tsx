@@ -2,8 +2,9 @@ import { motion } from 'framer-motion'
 import { useEffect, useState } from 'react'
 import { useAuth } from '../helpers/context/AuthContext'
 import $api from '../api/http'
-import { toast } from 'react-toastify'
+import { Slide, toast } from 'react-toastify'
 import { FaCheck, FaTimes } from 'react-icons/fa'
+import { useNavigate } from 'react-router-dom'
 
 type Supplement = {
 	name: string
@@ -61,6 +62,7 @@ export const MyCourse = () => {
 	const [newGoal, setNewGoal] = useState<string>('')
 	const [newSupplements, setNewSupplements] = useState<string[]>([])
 	const { user, isLoading: authLoading } = useAuth()
+	const navigate = useNavigate()
 
 	useEffect(() => {
 		const fetchCourses = async () => {
@@ -132,16 +134,28 @@ export const MyCourse = () => {
 				status,
 			})
 			const res = await $api.get(
-				`/api/my-course/?telegramId=${user!.telegramId}&courseId=${courseId}`
+				`/api/my-course?telegramId=${user!.telegramId}&courseId=${courseId}`
 			)
-			setSelectedCourse(res.data.courses)
+			if (!res.data.course) {
+				throw new Error('Курс не найден в ответе сервера')
+			}
+			setSelectedCourse(res.data.course)
 			setCourses(courses.map(c => (c.id === courseId ? res.data.course : c)))
 			toast.success(
-				`Прогресс отмечен: ${status === 'TAKEN' ? 'Принято' : 'Пропущено'}`
+				`Прогресс отмечен: ${status === 'TAKEN' ? 'Принято' : 'Пропущено'}`,
+				{
+					position: 'bottom-center',
+					theme: 'light',
+					transition: Slide,
+				}
 			)
 		} catch (error) {
 			console.error('Error marking progress:', error)
-			toast.error('Не удалось отметить прогресс.')
+			toast.error('Не удалось отметить прогресс.', {
+				position: 'bottom-center',
+				theme: 'light',
+				transition: Slide,
+			})
 		}
 	}
 
@@ -165,6 +179,7 @@ export const MyCourse = () => {
 			setNewGoal('')
 			setNewSupplements([])
 			toast.success('Курс обновлён!')
+			navigate('/my-course')
 		} catch (error) {
 			console.error('Error updating course:', error)
 			toast.error('Не удалось обновить курс.')
@@ -231,7 +246,7 @@ export const MyCourse = () => {
 				</select>
 			</motion.div>
 
-			{selectedCourse && (
+			{selectedCourse && selectedCourse.progress && (
 				<>
 					{/* Прогресс */}
 					<motion.div
@@ -465,27 +480,29 @@ export const MyCourse = () => {
 					</motion.div>
 
 					{/* История настроения */}
-					{selectedCourse.surveys.length > 0 && (
-						<motion.div
-							className='bg-white p-4 rounded-xl shadow-sm mb-6'
-							initial={{ opacity: 0 }}
-							animate={{ opacity: 1 }}
-						>
-							<h2 className='text-lg font-medium text-blue-900 mb-2'>
-								Самочувствие
-							</h2>
-							<ul className='text-blue-700'>
-								{selectedCourse.surveys
-									.filter(s => s.status === 'COMPLETED')
-									.map(survey => (
-										<li key={survey.id} className='py-1'>
-											{new Date(survey.createdAt).toLocaleDateString()}:{' '}
-											{survey.response}
-										</li>
-									))}
-							</ul>
-						</motion.div>
-					)}
+					{selectedCourse &&
+						selectedCourse.surveys &&
+						selectedCourse.surveys.length > 0 && (
+							<motion.div
+								className='bg-white p-4 rounded-xl shadow-sm mb-6'
+								initial={{ opacity: 0 }}
+								animate={{ opacity: 1 }}
+							>
+								<h2 className='text-lg font-medium text-blue-900 mb-2'>
+									Самочувствие
+								</h2>
+								<ul className='text-blue-700'>
+									{selectedCourse.surveys
+										.filter(s => s.status === 'COMPLETED')
+										.map(survey => (
+											<li key={survey.id} className='py-1'>
+												{new Date(survey.createdAt).toLocaleDateString()}:{' '}
+												{survey.response}
+											</li>
+										))}
+								</ul>
+							</motion.div>
+						)}
 
 					{/* Кнопка обновления */}
 					<motion.button
