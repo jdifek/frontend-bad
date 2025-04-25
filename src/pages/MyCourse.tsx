@@ -116,6 +116,7 @@ export const MyCourse = () => {
 
 		return { daysPassed, totalDays, progress, completionRate }
 	}
+  
 
 	const handleMarkProgress = async (
 		courseId: string,
