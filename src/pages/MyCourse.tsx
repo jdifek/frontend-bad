@@ -25,6 +25,7 @@ type Course = {
 	reminders: Reminder[]
 	progress: Progress[]
 	surveys: Survey[]
+	disclaimer: string
 }
 
 type Reminder = {
@@ -82,6 +83,24 @@ export const MyCourse = () => {
 		fetchCourses()
 	}, [user, authLoading])
 
+	// пулинг для автообновления прогресса
+	useEffect(() => {
+		if (!selectedCourse || !user?.telegramId) return
+
+		const interval = setInterval(async () => {
+			try {
+				const res = await $api.get(
+					`/api/my-course?telegramId=${user.telegramId}&courseId=${selectedCourse.id}`
+				)
+				setSelectedCourse(res.data.course)
+			} catch (error) {
+				console.error('Error polling course:', error)
+			}
+		}, 30000) // Каждые 30 секунд
+
+		return () => clearInterval(interval)
+	}, [selectedCourse, user])
+
 	const calculateProgress = (course: Course) => {
 		const startDate = new Date(course.createdAt)
 		const daysPassed = Math.floor(
@@ -109,15 +128,16 @@ export const MyCourse = () => {
 				telegramId: user!.telegramId,
 				courseId,
 				supplement,
-				date,
+				date: new Date(date).toISOString(),
 				status,
 			})
 			const res = await $api.get(
-				`/api/my-course/all-courses/?telegramId=${user!.telegramId}`
+				`/api/my-course/?telegramId=${user!.telegramId}&courseId=${courseId}`
 			)
-			setCourses(res.data.courses)
-			setSelectedCourse(
-				res.data.courses.find((c: Course) => c.id === courseId) || null
+			setSelectedCourse(res.data.courses)
+			setCourses(courses.map(c => (c.id === courseId ? res.data.course : c)))
+			toast.success(
+				`Прогресс отмечен: ${status === 'TAKEN' ? 'Принято' : 'Пропущено'}`
 			)
 		} catch (error) {
 			console.error('Error marking progress:', error)
