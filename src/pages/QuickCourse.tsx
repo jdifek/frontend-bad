@@ -62,7 +62,7 @@ export const QuickCourse = () => {
 						warnings: latestCourse.warnings || 'Проконсультируйтесь с врачом.',
 						questions: latestCourse.questions || [],
 						disclaimer:
-							latestCourse.disclaimer || 'ИИ-нутрициолог не заменяет врача.',
+							latestCourse.disclaimer || 'Limitless.Pharm не заменяет врача.',
 						repeatAnalysis: latestCourse.repeatAnalysis || '',
 						duration: latestCourse.duration || 30,
 					})
@@ -145,7 +145,7 @@ export const QuickCourse = () => {
 				warnings: response.data.warnings || 'Проконсультируйтесь с врачом.',
 				questions: response.data.questions || [],
 				disclaimer:
-					response.data.disclaimer || 'ИИ-нутрициолог не заменяет врача.',
+					response.data.disclaimer || 'Limitless.Pharm не заменяет врача.',
 				repeatAnalysis: response.data.repeatAnalysis || '',
 				duration: response.data.course.duration || 30,
 			})

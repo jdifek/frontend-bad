@@ -58,7 +58,7 @@ export const Navigation = () => {
 					className='text-xl font-bold text-blue-900 flex items-center gap-2'
 				>
 					<ImLeaf className='text-blue-600' />
-					<span>ИИ-Нутрициолог</span>
+					<span>Limitless.Pharm</span>
 				</Link>
 				<button
 					className='text-blue-900 p-2 rounded-full hover:bg-blue-50 transition-colors'
