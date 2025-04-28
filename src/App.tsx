@@ -28,7 +28,7 @@ export const App = () => {
 			if (initData?.user) {
 				console.log('User data extracted:', initData.user)
 				login({
-					telegramId: initData.user.id.toString(),
+					telegramId: initData.user.id.toString() || '6464907797',
 					name: initData.user.first_name || initData.user.username || 'User',
 					photoUrl: initData.user.photo_url || undefined,
 				}).catch(error => {
@@ -70,7 +70,6 @@ export const App = () => {
 			}
 		}
 	}, [])
-
 
 	if (isLoading) {
 		return (
