@@ -37,8 +37,6 @@ export const QuickCourse = () => {
 	const [loading, setLoading] = useState<boolean>(false)
 	const { user, isLoading: authLoading } = useAuth()
 
-	const telegramId = '6464907797'
-
 	useEffect(() => {
 		const fetchCourses = async () => {
 			console.log('fetchCourses called with:', { authLoading, user })
