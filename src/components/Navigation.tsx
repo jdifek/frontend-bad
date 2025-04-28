@@ -57,7 +57,7 @@ export const Navigation = () => {
 					to='/'
 					className='text-xl font-bold text-blue-900 flex items-center gap-2'
 				>
-					<ImLeaf className='text-blue-600' />
+					<img src='/Group 14.png' alt='logo' className='w-10 h-10' />
 					<span>Limitless.Pharm</span>
 				</Link>
 				<button

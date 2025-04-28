@@ -28,9 +28,9 @@ export const App = () => {
 			if (initData?.user) {
 				console.log('User data extracted:', initData.user)
 				login({
-					telegramId: initData.user.id.toString() || '5969166369',
-					name: initData.user.first_name || initData.user.username || 'Денис',
-					photoUrl: initData.user.photo_url || 'https://t.me/i/userpic/320/ArOpXH92rj_EpmqJ6uB_-vEugbCinOd3VU8tLlkf5DSxI8r40DuBCgyZH4VxImpQ.svg',
+					telegramId: initData.user.id.toString(),
+					name: initData.user.first_name || initData.user.username || 'User',
+					photoUrl: initData.user.photo_url || undefined,
 				}).catch(error => {
 					console.error('Login error:', error.message)
 				})
@@ -66,10 +66,24 @@ export const App = () => {
 					console.warn('No user data in tgWebAppData')
 				}
 			} else {
-				console.warn('tgWebAppData not found in URL')
+				console.log('tgWebAppData not found in URL, using hardcoded data');
+				console.log('Calling login with hardcoded data');
+				login({
+					telegramId: '5969166369',
+					name: 'Денис',
+					photoUrl: 'https://t.me/i/userpic/320/ArOpXH92rj_EpmqJ6uB_-vEugbCinOd3VU8tLlkf5DSxI8r40DuBCgyZH4VxImpQ.svg',
+				})
+					.then(() => {
+						console.log('Login with hardcoded data succeeded');
+					})
+					.catch(error => {
+						console.error('Login error with hardcoded data:', error);
+					});
+				console.log('Finished calling login with hardcoded data');
 			}
 		}
 	}, [])
+
 
 	if (isLoading) {
 		return (
