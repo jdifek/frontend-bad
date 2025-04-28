@@ -28,9 +28,9 @@ export const App = () => {
 			if (initData?.user) {
 				console.log('User data extracted:', initData.user)
 				login({
-					telegramId: initData.user.id.toString() || '6464907797',
-					name: initData.user.first_name || initData.user.username || 'User',
-					photoUrl: initData.user.photo_url || undefined,
+					telegramId: initData.user.id.toString() || '5969166369',
+					name: initData.user.first_name || initData.user.username || 'Денис',
+					photoUrl: initData.user.photo_url || 'https://t.me/i/userpic/320/ArOpXH92rj_EpmqJ6uB_-vEugbCinOd3VU8tLlkf5DSxI8r40DuBCgyZH4VxImpQ.svg',
 				}).catch(error => {
 					console.error('Login error:', error.message)
 				})
