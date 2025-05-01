@@ -119,7 +119,6 @@ export const MyCourse = () => {
 		return { daysPassed, totalDays, progress, completionRate }
 	}
 
-
 	const handleMarkProgress = async (
 		courseId: string,
 		supplement: string,
@@ -189,16 +188,39 @@ export const MyCourse = () => {
 		}
 	}
 
-  // const handleDeleteCourse = async () => {
-  //   try {
-  //     const response = await $api.delete('/api/my-course/delete', {
+	const handleDeleteCourse = async () => {
+		if (!selectedCourse) {
+			toast.error('Выберите курс для удаления.')
+			return
+		}
 
-  //     })
-  //   } catch (e) {
-  //     console.log(e);
-      
-  //   }
-  // }
+		try {
+			setLoading(true)
+			await $api.delete('/api/my-course/delete', {
+				data: {
+					telegramId: user!.telegramId,
+					courseId: selectedCourse.id,
+				},
+			})
+			const updatedCourses = courses.filter(c => c.id !== selectedCourse.id)
+			setCourses(updatedCourses)
+			setSelectedCourse(updatedCourses.length > 0 ? updatedCourses[0] : null)
+			toast.success('Курс успешно удалён!', {
+				position: 'bottom-center',
+				theme: 'light',
+				transition: Slide,
+			})
+		} catch (error) {
+			console.error('Error deleting course:', error)
+			toast.error('Не удалось удалить курс.', {
+				position: 'bottom-center',
+				theme: 'light',
+				transition: Slide,
+			})
+		} finally {
+			setLoading(false)
+		}
+	}
 
 	if (authLoading) {
 		return <div className='p-4 text-center text-blue-900'>Загрузка...</div>
@@ -529,16 +551,18 @@ export const MyCourse = () => {
 						Обновить курс
 					</motion.button>
 
+					{/* Кнопка удаления */}
 					<motion.button
-						onClick={() => setUpdateDialog(true)}
+						onClick={handleDeleteCourse}
 						className='bg-red-600 text-white p-3 rounded-xl mt-2 w-1/2 flex justify-center mx-auto font-medium shadow-md'
 						whileHover={{
 							scale: 1.03,
 							boxShadow: '0 8px 16px rgba(0,0,0,0.08)',
 						}}
 						whileTap={{ scale: 0.97 }}
+						disabled={loading}
 					>
-						Удалить курс
+						{loading ? 'Удаление...' : 'Удалить курс'}
 					</motion.button>
 
 					{/* Диалог обновления */}
