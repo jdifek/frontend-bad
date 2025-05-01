@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { IoMenu, IoClose, IoFlask, IoRestaurant } from 'react-icons/io5'
-import { ImTarget, ImLeaf } from 'react-icons/im'
+import { ImTarget } from 'react-icons/im'
 import { FaBook } from 'react-icons/fa'
 
 export const Navigation = () => {
