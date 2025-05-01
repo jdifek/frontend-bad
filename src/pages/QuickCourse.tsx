@@ -30,12 +30,13 @@ type Course = {
 }
 
 export const QuickCourse = () => {
-	const [goal, setGoal] = useState<string>('')
+	const [goals, setGoals] = useState<string[]>([])
 	const [supplements, setSupplements] = useState<Supplement[]>([])
 	const [course, setCourse] = useState<Course | null>(null)
 	const [error, setError] = useState<string | null>(null)
 	const [loading, setLoading] = useState<boolean>(false)
 	const { user, isLoading: authLoading } = useAuth()
+  const [dietPreference, setDietPreference] = useState<string>("none");
 
 	useEffect(() => {
 		const fetchCourses = async () => {
@@ -62,7 +63,7 @@ export const QuickCourse = () => {
 						warnings: latestCourse.warnings || 'Проконсультируйтесь с врачом.',
 						questions: latestCourse.questions || [],
 						disclaimer:
-							latestCourse.disclaimer || 'ИИ-нутрициолог не заменяет врача.',
+							latestCourse.disclaimer || 'Персонализированные рекомендации ИИ-нутрициолога на основе открытых исследований и общих принципов. Не является медицинской услугой или диагнозом',
 						repeatAnalysis: latestCourse.repeatAnalysis || '',
 						duration: latestCourse.duration || 30,
 					})
@@ -116,48 +117,49 @@ export const QuickCourse = () => {
 	}
 
 	const handleGenerateCourse = async () => {
-		if (authLoading || !user?.telegramId) {
-			setError(
-				'Пользователь не авторизован. Попробуйте перезагрузить приложение.'
-			)
-			return
-		}
-
-		if (!goal || supplements.length === 0) {
-			setError('Выберите цель и добавьте хотя бы одну добавку.')
-			return
-		}
-
-		try {
-			setLoading(true)
-			setError(null)
-			const response = await $api.post('/api/courses', {
-				telegramId: user.telegramId,
-				goal,
-			})
-			console.log('Generated course:', response.data)
-			setCourse({
-				...response.data.course,
-				supplements: response.data.course.supplements || [],
-				suggestions:
-					response.data.suggestions ||
-					'Следуйте расписанию для достижения цели.',
-				warnings: response.data.warnings || 'Проконсультируйтесь с врачом.',
-				questions: response.data.questions || [],
-				disclaimer:
-					response.data.disclaimer || 'ИИ-нутрициолог не заменяет врача.',
-				repeatAnalysis: response.data.repeatAnalysis || '',
-				duration: response.data.course.duration || 30,
-			})
-		} catch (error) {
-			console.error('Error generating course:', error)
-			setError(
-				'Не удалось сгенерировать курс. Попробуйте снова или перезагрузите приложение.'
-			)
-		} finally {
-			setLoading(false)
-		}
-	}
+    if (authLoading || !user?.telegramId) {
+      setError('Пользователь не авторизован. Попробуйте перезагрузить приложение.');
+      return;
+    }
+  
+    if (goals.length === 0) {
+      setError('Выберите хотя бы одну цель.');
+      return;
+    }
+  
+    try {
+      setLoading(true);
+      setError(null);
+      const response = await $api.post('/api/courses', {
+        telegramId: user.telegramId,
+        goal: goals.join(', '),
+        dietPreference,
+        checklist: JSON.stringify(supplements.map(s => s.name)), // Преобразуем массив в строку JSON
+      });
+      console.log('Generated course:', response.data);
+      setCourse({
+        ...response.data.course,
+        supplements: response.data.course.supplements || [],
+        suggestions:
+          response.data.suggestions ||
+          'Следуйте расписанию для достижения цели.',
+        warnings: response.data.warnings || 'Проконсультируйтесь с врачом.',
+        questions: response.data.questions || [],
+        disclaimer:
+          response.data.disclaimer ||
+          'Персонализированные рекомендации ИИ-нутрициолога на основе открытых исследований и общих принципов. Не является медицинской услугой или диагнозом',
+        repeatAnalysis: response.data.repeatAnalysis || '',
+        duration: response.data.course.duration || 30,
+      });
+    } catch (error) {
+      console.error('Error generating course:', error);
+      setError(
+        'Не удалось сгенерировать курс. Попробуйте снова или перезагрузите приложение.'
+      );
+    } finally {
+      setLoading(false);
+    }
+  };
 
 	if (authLoading) {
 		return <div className='p-4 text-center text-blue-900'>Загрузка...</div>
@@ -190,7 +192,7 @@ export const QuickCourse = () => {
 					{error}
 				</motion.div>
 			)}
-			<GoalSelector onSelect={(g: string) => setGoal(g)} />
+			<GoalSelector dietPreference={dietPreference} setDietPreference={setDietPreference} onSelect={(g: string[]) => setGoals(g)} />
 			<SupplementInput
 				onAdd={handleAddSupplement}
 				onRemove={handleRemoveSupplement}
@@ -198,7 +200,7 @@ export const QuickCourse = () => {
 			<motion.button
 				onClick={handleGenerateCourse}
 				className='bg-blue-600 text-white p-3 rounded-xl w-full relative z-10 font-medium shadow-md mt-4'
-				disabled={!goal || supplements.length === 0 || loading}
+				disabled={goals.length === 0 || loading}
 				whileHover={{ scale: 1.03, boxShadow: '0 8px 16px rgba(0,0,0,0.08)' }}
 				whileTap={{ scale: 0.97 }}
 			>

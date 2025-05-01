@@ -189,6 +189,17 @@ export const MyCourse = () => {
 		}
 	}
 
+  // const handleDeleteCourse = async () => {
+  //   try {
+  //     const response = await $api.delete('/api/my-course/delete', {
+
+  //     })
+  //   } catch (e) {
+  //     console.log(e);
+      
+  //   }
+  // }
+
 	if (authLoading) {
 		return <div className='p-4 text-center text-blue-900'>Загрузка...</div>
 	}
@@ -516,6 +527,18 @@ export const MyCourse = () => {
 						whileTap={{ scale: 0.97 }}
 					>
 						Обновить курс
+					</motion.button>
+
+					<motion.button
+						onClick={() => setUpdateDialog(true)}
+						className='bg-red-600 text-white p-3 rounded-xl mt-2 w-1/2 flex justify-center mx-auto font-medium shadow-md'
+						whileHover={{
+							scale: 1.03,
+							boxShadow: '0 8px 16px rgba(0,0,0,0.08)',
+						}}
+						whileTap={{ scale: 0.97 }}
+					>
+						Удалить курс
 					</motion.button>
 
 					{/* Диалог обновления */}

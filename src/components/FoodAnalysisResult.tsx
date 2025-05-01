@@ -69,7 +69,7 @@ export const FoodAnalysisResult = ({ analysis }: { analysis: Analysis }) => {
 						</h4>
 						<p className='text-gray-600 text-sm'>{analysis.suggestions}</p>
 					</div>
-					{analysis.questions.length > 0 && (
+					{/* {analysis.questions.length > 0 && (
 						<div className='border-t border-gray-300 pt-4 mt-4'>
 							<h4 className='text-md font-medium text-blue-900 mb-2'>
 								Уточняющие вопросы
@@ -80,15 +80,15 @@ export const FoodAnalysisResult = ({ analysis }: { analysis: Analysis }) => {
 								))}
 							</ul>
 						</div>
-					)}
-					{analysis.warnings && (
+					)} */}
+					{/* {analysis.warnings && (
 						<div className='border-t border-gray-300 pt-4 mt-4'>
 							<h4 className='text-md font-medium text-blue-900 mb-2'>
 								Предостережения
 							</h4>
 							<p className='text-gray-600 text-sm'>{analysis.warnings}</p>
 						</div>
-					)}
+					)} */}
 				</div>
 			</div>
 		</motion.div>

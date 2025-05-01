@@ -77,7 +77,7 @@ export const SupplementInput = ({ onAdd, onRemove }: SupplementInputProps) => {
 	return (
 		<div className='mb-6'>
 			<h2 className='text-lg font-semibold text-blue-900 mb-3'>
-				Добавьте добавки:
+			Если вы уже что-то принимаете:
 			</h2>
 
 			{/* Выбор метода ввода */}

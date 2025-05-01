@@ -4,6 +4,7 @@ import { QuickCourse } from './pages/QuickCourse'
 import { AnalysisCourse } from './pages/AnalysisCourse'
 import { FoodAnalysis } from './pages/FoodAnalysis'
 import { MyCourse } from './pages/MyCourse'
+import { Feedback } from './pages/Feedback'
 
 export const RoutesConfig = () => {
 	return (
@@ -13,6 +14,7 @@ export const RoutesConfig = () => {
 			<Route path='/analysis-course' element={<AnalysisCourse />} />
 			<Route path='/food-analysis' element={<FoodAnalysis />} />
 			<Route path='/my-course' element={<MyCourse />} />
+			<Route path='/feedback' element={<Feedback />} />
 		</Routes>
 	)
 }

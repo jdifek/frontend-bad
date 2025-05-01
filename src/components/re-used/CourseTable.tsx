@@ -157,36 +157,14 @@ export const CourseTable = ({ course }: CourseTableProps) => {
 			</div>
 
 			{/* Предостережения */}
-			<div className='bg-yellow-50 p-4 rounded-lg mb-4'>
+			{/* <div className='bg-yellow-50 p-4 rounded-lg mb-4'>
 				<h3 className='text-md font-medium text-yellow-900 mb-2'>
 					Предостережения:
 				</h3>
 				<p className='text-gray-600 text-sm'>{course.warnings}</p>
-			</div>
+			</div> */}
 
-			{/* Уточняющие вопросы */}
-			{course.questions.length > 0 && (
-				<div className='bg-blue-50 p-4 rounded-lg mb-4'>
-					<h3 className='text-md font-medium text-blue-900 mb-2'>
-						Уточняющие вопросы:
-					</h3>
-					<ul className='text-gray-600 text-sm list-disc ml-4'>
-						{course.questions.map((question, index) => (
-							<li key={index}>{question}</li>
-						))}
-					</ul>
-				</div>
-			)}
-
-			{/* Рекомендации по повторным анализам */}
-			{course.repeatAnalysis && (
-				<div className='bg-purple-50 p-4 rounded-lg mb-4'>
-					<h3 className='text-md font-medium text-purple-900 mb-2'>
-						Повторные анализы:
-					</h3>
-					<p className='text-gray-600 text-sm'>{course.repeatAnalysis}</p>
-				</div>
-			)}
+		
 
 			{/* Дисклеймер */}
 			<div className='bg-gray-50 p-4 rounded-lg'>
