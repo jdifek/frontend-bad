@@ -78,22 +78,9 @@ export const GoalSelector = ({ dietPreference, onSelect, setDietPreference }: Go
           </motion.button>
         ))}
       </div>
-      <div className="mb-6 mt-3">
-        <h2 className="text-lg font-semibold text-blue-900 mb-1">
-          Диетические предпочтения:
-        </h2>
-        <select
-          className="w-full p-3 rounded-xl border border-gray-300 focus:border-blue-600 focus:outline-none bg-white text-blue-900"
-          value={dietPreference}
-          onChange={(e) => setDietPreference(e.target.value)}
-        >
-          <option value="none">Без ограничений</option>
-          <option value="vegetarian">Вегетарианец</option>
-          <option value="vegan">Веган</option>
-        </select>
-      </div>
       {selectedGoals.includes("Другое") && (
         <div className="mt-4">
+ 
           <input
             type="text"
             value={customGoal}
@@ -112,6 +99,20 @@ export const GoalSelector = ({ dietPreference, onSelect, setDietPreference }: Go
           </motion.button>
         </div>
       )}
+           <div className="mb-6 mt-3">
+        <h2 className="text-lg font-semibold text-blue-900 mb-1">
+          Диетические предпочтения:
+        </h2>
+        <select
+          className="w-full p-3 rounded-xl border border-gray-300 focus:border-blue-600 focus:outline-none bg-white text-blue-900"
+          value={dietPreference}
+          onChange={(e) => setDietPreference(e.target.value)}
+        >
+          <option value="none">Без ограничений</option>
+          <option value="vegetarian">Вегетарианец</option>
+          <option value="vegan">Веган</option>
+        </select>
+      </div>
     </div>
   );
 };

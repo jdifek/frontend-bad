@@ -57,8 +57,7 @@ export const Navigation = () => {
 					to='/'
 					className='text-xl font-bold text-blue-900 flex items-center gap-2'
 				>
-					<img src='/Group 14.png' alt='logo' className='w-10 h-10' />
-					<span>Limitless.Pharm</span>
+					<img src='/Logo.png' alt='logo' className='w-40' />
 				</Link>
 				<button
 					className='text-blue-900 p-2 rounded-full hover:bg-blue-50 transition-colors'
