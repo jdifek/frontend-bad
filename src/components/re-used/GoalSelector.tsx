@@ -1,5 +1,8 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
+import { useAuth } from "../../helpers/context/AuthContext";
+import $api from "../../api/http";
+
 const goals = [
   "Повысить концентрацию",
   "Энергия / бодрость",
@@ -9,22 +12,40 @@ const goals = [
   "Набор массы",
   "Улучшить память",
   "Повысить тестостерон",
-  "Другое",
+  "Своя цель",
 ];
 
 type GoalSelectorProps = {
   onSelect: (goals: string[]) => void;
   dietPreference: string;
-  setDietPreference: React.Dispatch<React.SetStateAction<string>>
+  setDietPreference: React.Dispatch<React.SetStateAction<string>>;
 };
 
 export const GoalSelector = ({ dietPreference, onSelect, setDietPreference }: GoalSelectorProps) => {
   const [selectedGoals, setSelectedGoals] = useState<string[]>([]);
   const [customGoal, setCustomGoal] = useState<string>("");
+  const { user, isLoading: authLoading } = useAuth();
+
+  const trackAnalytics = async (goals: string[]) => {
+    if (authLoading || !user?.telegramId) {
+      console.warn('Cannot track analytics: user not authenticated');
+      return;
+    }
+
+    try {
+      await $api.post('/api/courses/analytics/goals', {
+        telegramId: user.telegramId,
+        goals,
+      });
+      console.log('Goal analytics tracked:', goals);
+    } catch (error) {
+      console.error('Error tracking goal analytics:', error);
+    }
+  };
 
   const handleSelect = (goal: string) => {
     let updatedGoals: string[];
-    if (goal === "Другое") {
+    if (goal === "Своя цель") {
       updatedGoals = [goal];
       setCustomGoal("");
     } else {
@@ -38,8 +59,9 @@ export const GoalSelector = ({ dietPreference, onSelect, setDietPreference }: Go
       }
     }
     setSelectedGoals(updatedGoals);
-    if (updatedGoals.length > 0 && updatedGoals[0] !== "Другое") {
+    if (updatedGoals.length > 0 && updatedGoals[0] !== "Своя цель") {
       onSelect(updatedGoals);
+      trackAnalytics(updatedGoals);
     }
   };
 
@@ -48,6 +70,7 @@ export const GoalSelector = ({ dietPreference, onSelect, setDietPreference }: Go
       const updatedGoals = [customGoal];
       setSelectedGoals(updatedGoals);
       onSelect(updatedGoals);
+      trackAnalytics(updatedGoals);
     }
   };
 
@@ -66,7 +89,7 @@ export const GoalSelector = ({ dietPreference, onSelect, setDietPreference }: Go
             className={`p-3 text-sm rounded-xl border ${
               isGoalSelected(goal)
                 ? "bg-blue-600 text-white border-blue-600"
-                : goal === "Другое"
+                : goal === "Своя цель"
                 ? "bg-yellow-500 text-white border-yellow-500 hover:bg-yellow-600"
                 : "bg-white text-blue-900 border-gray-300 hover:border-blue-600"
             } transition-all shadow-sm`}
@@ -78,9 +101,8 @@ export const GoalSelector = ({ dietPreference, onSelect, setDietPreference }: Go
           </motion.button>
         ))}
       </div>
-      {selectedGoals.includes("Другое") && (
+      {selectedGoals.includes("Своя цель") && (
         <div className="mt-4">
- 
           <input
             type="text"
             value={customGoal}
@@ -99,7 +121,7 @@ export const GoalSelector = ({ dietPreference, onSelect, setDietPreference }: Go
           </motion.button>
         </div>
       )}
-           <div className="mb-6 mt-3">
+      <div className="mb-6 mt-3">
         <h2 className="text-lg font-semibold text-blue-900 mb-1">
           Диетические предпочтения:
         </h2>

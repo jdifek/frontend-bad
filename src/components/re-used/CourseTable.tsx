@@ -31,9 +31,7 @@ type CourseTableProps = {
 
 export const CourseTable = ({ course }: CourseTableProps) => {
 	const [duration, setDuration] = useState<number>(course.duration || 30)
-	const [progress, setProgress] = useState<{ [key: string]: number }>(
-		course.supplements.reduce((acc, supp) => ({ ...acc, [supp.name]: 0 }), {})
-	)
+
 
 	const scheduleItems = [
 		{
@@ -53,12 +51,6 @@ export const CourseTable = ({ course }: CourseTableProps) => {
 		},
 	]
 
-	const handleProgressUpdate = (supplement: string, increment: number) => {
-		setProgress(prev => ({
-			...prev,
-			[supplement]: Math.min(Math.max(prev[supplement] + increment, 0), 100),
-		}))
-	}
 
 	return (
 		<motion.div
@@ -110,32 +102,7 @@ export const CourseTable = ({ course }: CourseTableProps) => {
 													{supplement}{' '}
 													{suppData?.dose ? `(${suppData.dose})` : ''}
 												</span>
-												<div className='flex items-center space-x-2'>
-													<motion.button
-														onClick={() =>
-															handleProgressUpdate(supplement, -10)
-														}
-														className='text-blue-600'
-														whileHover={{ scale: 1.1 }}
-														whileTap={{ scale: 0.9 }}
-													>
-														-
-													</motion.button>
-													<div className='w-24 h-2 bg-gray-200 rounded-full'>
-														<div
-															className='h-full bg-blue-600 rounded-full'
-															style={{ width: `${progress[supplement] || 0}%` }}
-														/>
-													</div>
-													<motion.button
-														onClick={() => handleProgressUpdate(supplement, 10)}
-														className='text-blue-600'
-														whileHover={{ scale: 1.1 }}
-														whileTap={{ scale: 0.9 }}
-													>
-														+
-													</motion.button>
-												</div>
+										
 											</div>
 										</li>
 									)
