@@ -32,8 +32,8 @@ export const FoodAnalysis = () => {
     grams: '',
     suggestions: '',
   });
-  const [calorieGoal, setCalorieGoal] = useState(2212); // Default goal from photo
-  const [caloriesBurned, setCaloriesBurned] = useState(0); // Default from photo
+  const [calorieGoal] = useState(2212); // Default goal from photo
+  const [caloriesBurned] = useState(0); // Default from photo
   const [meals, setMeals] = useState<{ [key: string]: Meal[] }>({
     Breakfast: [],
     Lunch: [],

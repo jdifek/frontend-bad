@@ -53,7 +53,8 @@ export const SupplementInput = ({ supplements, onAdd, onRemove, onPhotosChange }
       for (const file of newPhotos) {
         try {
           await new Promise<void>((resolve) => {
-            onAdd({ name: '', file }, (recognizedSupplements: Supplement[]) => {
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
+            onAdd({ name: '', file }, () => {
               resolve();
             });
           });

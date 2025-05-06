@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { AnimatePresence, motion } from "framer-motion";
 import { useEffect, useState } from "react";
 import { useAuth } from "../helpers/context/AuthContext";
@@ -6,6 +8,7 @@ import { Slide, toast } from "react-toastify";
 import { FaCheck, FaTimes, FaCalendarAlt } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 import Calendar from "react-calendar";
+import "react-calendar/dist/Calendar.css";
 
 type Supplement = {
   name: string;
@@ -63,7 +66,7 @@ export const MyCourse = () => {
   const [newGoal, setNewGoal] = useState<string>("");
   const [newSupplements, setNewSupplements] = useState<string[]>([]);
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
-  const [showCalendar, setShowCalendar] = useState<boolean>(false); // New state for calendar visibility
+  const [showCalendar, setShowCalendar] = useState<boolean>(false);
   const { user, isLoading: authLoading } = useAuth();
   const navigate = useNavigate();
 
@@ -228,8 +231,8 @@ export const MyCourse = () => {
 
   const getLocalDateString = (date: Date) => {
     const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, '0');
-    const day = String(date.getDate()).padStart(2, '0');
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const day = String(date.getDate()).padStart(2, "0");
     return `${year}-${month}-${day}`;
   };
 
@@ -238,7 +241,7 @@ export const MyCourse = () => {
 
     const dateString = getLocalDateString(date);
     return selectedCourse.progress.filter((p) => {
-      const progressDate = p.date.split('T')[0];
+      const progressDate = p.date.split("T")[0];
       return progressDate === dateString;
     });
   };
@@ -346,74 +349,80 @@ export const MyCourse = () => {
 
           {/* Календарь */}
           <motion.div
-  className="bg-white p-4 rounded-xl shadow-sm mb-6"
-  initial={{ opacity: 0 }}
-  animate={{ opacity: 1 }}
-  transition={{ duration: 0.5 }}
->
-  <div className="flex items-center justify-between mb-1">
-    <h2 className="text-lg font-medium text-blue-900">История приёма</h2>
-    <button
-      onClick={() => setShowCalendar(!showCalendar)}
-      className="text-blue-600 hover:text-blue-800"
-      title={showCalendar ? "Скрыть календарь" : "Показать календарь"}
-    >
-      <FaCalendarAlt size={20} />
-    </button>
-  </div>
-  <AnimatePresence>
-    {showCalendar && (
-      <motion.div
-        initial={{ opacity: 0, height: 0 }}
-        animate={{ opacity: 1, height: "auto" }}
-        exit={{ opacity: 0, height: 0 }}
-        transition={{ duration: 0.3, ease: "easeInOut" }}
-      >
-        <Calendar
-          onChange={(value: Date) => setSelectedDate(value)}
-          value={selectedDate}
-          className="w-full mb-4 mx-auto rounded-lg border border-blue-200"
-          tileClassName={({ date }) => {
-            const progress = getProgressForDate(date);
-            if (progress.length > 0) {
-              const allTaken = progress.every((p) => p.status === "TAKEN");
-              const someSkipped = progress.some((p) => p.status === "SKIPPED");
-              return allTaken && !someSkipped
-                ? "bg-green-100"
-                : someSkipped
-                ? "bg-red-100"
-                : "bg-yellow-100";
-            }
-            return "";
-          }}
-        />
-        <div>
-          <h3 className="text-sm font-medium text-blue-900 mb-2">
-            Статус за {selectedDate.toLocaleDateString()}:
-          </h3>
-          {getProgressForDate(selectedDate).length > 0 ? (
-            <ul className="text-blue-700">
-              {getProgressForDate(selectedDate).map((progress, index) => (
-                <li key={index} className="py-1 flex items-center">
-                  <span>{progress.supplement}:</span>
-                  <span className="ml-2">
-                    {progress.status === "TAKEN" ? (
-                      <FaCheck className="text-green-600" />
+            className="bg-white p-4 rounded-xl shadow-sm mb-6"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.5 }}
+          >
+            <div className="flex items-center justify-between mb-1">
+              <h2 className="text-lg font-medium text-blue-900">История приёма</h2>
+              <button
+                onClick={() => setShowCalendar(!showCalendar)}
+                className="text-blue-600 hover:text-blue-800"
+                title={showCalendar ? "Скрыть календарь" : "Показать календарь"}
+              >
+                <FaCalendarAlt size={20} />
+              </button>
+            </div>
+            <AnimatePresence>
+              {showCalendar && (
+                <motion.div
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: "auto" }}
+                  exit={{ opacity: 0, height: 0 }}
+                  transition={{ duration: 0.3, ease: "easeInOut" }}
+                >
+                  <Calendar
+                    onChange={(value: any) => {
+                      if (value instanceof Date) {
+                        setSelectedDate(value);
+                      } else if (Array.isArray(value) && value.length > 0 && value[0] instanceof Date) {
+                        setSelectedDate(value[0]); // Для диапазона берем первую дату
+                      }
+                    }}
+                    value={selectedDate}
+                    className="w-full mb-4 mx-auto rounded-lg border border-blue-200"
+                    tileClassName={({ date }) => {
+                      const progress = getProgressForDate(date);
+                      if (progress.length > 0) {
+                        const allTaken = progress.every((p) => p.status === "TAKEN");
+                        const someSkipped = progress.some((p) => p.status === "SKIPPED");
+                        return allTaken && !someSkipped
+                          ? "bg-green-100"
+                          : someSkipped
+                          ? "bg-red-100"
+                          : "bg-yellow-100";
+                      }
+                      return "";
+                    }}
+                  />
+                  <div>
+                    <h3 className="text-sm font-medium text-blue-900 mb-2">
+                      Статус за {selectedDate.toLocaleDateString()}:
+                    </h3>
+                    {getProgressForDate(selectedDate).length > 0 ? (
+                      <ul className="text-blue-700">
+                        {getProgressForDate(selectedDate).map((progress, index) => (
+                          <li key={index} className="py-1 flex items-center">
+                            <span>{progress.supplement}:</span>
+                            <span className="ml-2">
+                              {progress.status === "TAKEN" ? (
+                                <FaCheck className="text-green-600" />
+                              ) : (
+                                <FaTimes className="text-red-600" />
+                              )}
+                            </span>
+                          </li>
+                        ))}
+                      </ul>
                     ) : (
-                      <FaTimes className="text-red-600" />
+                      <p className="text-sm text-blue-700">Нет данных за этот день.</p>
                     )}
-                  </span>
-                </li>
-              ))}
-            </ul>
-          ) : (
-            <p className="text-sm text-blue-700">Нет данных за этот день.</p>
-          )}
-        </div>
-      </motion.div>
-    )}
-  </AnimatePresence>
-</motion.div>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </motion.div>
 
           {/* Таблица курса */}
           <motion.div
@@ -439,7 +448,7 @@ export const MyCourse = () => {
                     <td className="p-2">
                       {selectedCourse.schedule.morning.join(", ")}
                     </td>
-                    <td className=" p-2">
+                    <td className="p-2">
                       {selectedCourse.schedule.morning.map((supplement) => {
                         const today = new Date().toISOString().split("T")[0];
                         const progress = selectedCourse.progress.find(
