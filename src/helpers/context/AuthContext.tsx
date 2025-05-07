@@ -10,6 +10,7 @@ import $api from '../../api/http'
 interface User {
 	telegramId: string
 	name: string
+  goal: number
 	photoUrl?: string | null
 }
 
