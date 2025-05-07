@@ -18,13 +18,20 @@ type Analysis = {
   warnings: string;
 };
 
-type Meal = {
+interface Meal {
   id: number;
   dish: string;
   calories: number;
   type: string;
   date: string;
-};
+}
+
+interface Meals {
+  Breakfast: Meal[];
+  Lunch: Meal[];
+  Snack: Meal[];
+  Dinner: Meal[];
+}
 
 export const FoodAnalysis = () => {
   const [analysis, setAnalysis] = useState<Analysis | null>(null);
@@ -32,7 +39,7 @@ export const FoodAnalysis = () => {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
   const [showModal, setShowModal] = useState<boolean>(false);
-  const [selectedMealType, setSelectedMealType] = useState<string | null>(null);
+  const [selectedMealType, setSelectedMealType] = useState<keyof Meals | null>(null);
   const [showManualInput, setShowManualInput] = useState<boolean>(false);
   const [manualInput, setManualInput] = useState({
     dish: '',
@@ -43,7 +50,7 @@ export const FoodAnalysis = () => {
 
   const [calorieGoal, setCalorieGoal] = useState<number>(user?.goal || 0);
   const [caloriesBurned] = useState<number>(0);
-  const [meals, setMeals] = useState<{ [key: string]: Meal[] }>({
+  const [meals, setMeals] = useState<Meals>({
     Breakfast: [],
     Lunch: [],
     Snack: [],
@@ -73,23 +80,30 @@ export const FoodAnalysis = () => {
           setCalorieGoal(userResponse.data.user.goal);
         }
 
-
         // Загружаем еду
+        interface ApiMeal {
+          id: number;
+          dish: string;
+          calories: number;
+          type?: string;
+          date: string;
+        }
+
         const mealsResponse = await $api.get(`/api/meals/user/${user.telegramId}/meals`);
-        const initialMeals = {
+        const initialMeals: Meals = {
           Breakfast: [],
           Lunch: [],
           Snack: [],
           Dinner: [],
         };
-        mealsResponse.data.meals.forEach((meal: any) => {
-          const mealType = meal.type || 'Breakfast';
+        mealsResponse.data.meals.forEach((meal: ApiMeal) => {
+          const mealType = (meal.type || 'Breakfast') as keyof Meals;
           initialMeals[mealType].push({
             id: meal.id,
             dish: meal.dish,
             calories: meal.calories,
             type: mealType,
-            date: meal.date, // ISO-формат из API
+            date: meal.date,
           });
         });
         setMeals(initialMeals);
@@ -155,7 +169,7 @@ export const FoodAnalysis = () => {
 
       const newAnalysis = res.data.foodAnalysis;
       setAnalysis(newAnalysis);
-      if (selectedMealType) {
+      if (selectedMealType && (['Breakfast', 'Lunch', 'Snack', 'Dinner'] as const).includes(selectedMealType)) {
         await addMeal(selectedMealType, newAnalysis);
       }
       setShowModal(false);
@@ -198,7 +212,7 @@ export const FoodAnalysis = () => {
 
       const newAnalysis = res.data.foodAnalysis;
       setAnalysis(newAnalysis);
-      if (selectedMealType) {
+      if (selectedMealType && (['Breakfast', 'Lunch', 'Snack', 'Dinner'] as const).includes(selectedMealType)) {
         await addMeal(selectedMealType, newAnalysis);
       }
       setShowModal(false);
@@ -222,19 +236,12 @@ export const FoodAnalysis = () => {
     }
   };
 
-  const addMeal = async (mealType: string, analysis: Analysis) => {
+  const addMeal = async (mealType: keyof Meals, analysis: Analysis) => {
     if (!user?.telegramId) return;
 
     try {
       const mealDate = new Date().toISOString();
-      const res = await $api.post('/api/meals/meals', {
-        telegramId: user.telegramId,
-        dish: analysis.dish,
-        calories: analysis.calories,
-        type: mealType,
-        date: mealDate,
-      });
-
+   
       setMeals((prev) => ({
         ...prev,
         [mealType]: [
@@ -255,7 +262,7 @@ export const FoodAnalysis = () => {
   };
 
   const totalConsumed = Object.values(meals).reduce(
-    (sum, mealsArray) => sum + mealsArray.reduce((acc, meal) => acc + meal.calories, 0),
+    (sum, mealsArray) => sum + mealsArray.reduce((acc: number, meal: Meal) => acc + meal.calories, 0),
     0
   );
   const remaining = calorieGoal + caloriesBurned - totalConsumed;
@@ -264,8 +271,8 @@ export const FoodAnalysis = () => {
   const getMealsForDate = (date: Date) => {
     const dateString = getDateString(date);
     const mealsForDate: Meal[] = [];
-    Object.values(meals).forEach((mealArray) => {
-      mealArray.forEach((meal) => {
+    (Object.keys(meals) as (keyof Meals)[]).forEach((mealType) => {
+      meals[mealType].forEach((meal) => {
         const mealDate = meal.date.split('T')[0];
         if (mealDate === dateString) {
           mealsForDate.push(meal);
@@ -358,7 +365,7 @@ export const FoodAnalysis = () => {
               transition={{ duration: 0.3, ease: 'easeInOut' }}
             >
               <Calendar
-                onChange={(value: any) => {
+                onChange={(value) => {
                   if (value instanceof Date) {
                     setSelectedDate(value);
                   } else if (Array.isArray(value) && value.length > 0 && value[0] instanceof Date) {
@@ -397,7 +404,7 @@ export const FoodAnalysis = () => {
       </motion.div>
 
       {/* Meal Sections */}
-      {['Breakfast', 'Lunch', 'Snack', 'Dinner'].map((mealType) => (
+      {(['Breakfast', 'Lunch', 'Snack', 'Dinner'] as const).map((mealType) => (
         <motion.div
           key={mealType}
           className='bg-white rounded-xl p-4 mb-6 shadow-sm border border-gray-300'
