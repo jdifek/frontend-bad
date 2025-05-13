@@ -6,6 +6,7 @@ import { CourseTable } from '../components/re-used/CourseTable'
 import $api from '../api/http'
 import { useAuth } from '../helpers/context/AuthContext'
 import { Slide, toast } from 'react-toastify'
+import { BackButton } from '../components/BackButton'
 
 type Supplement = {
   name: string
@@ -230,7 +231,8 @@ export const QuickCourse = () => {
   }
 
   return (
-    <div className='relative p-4 py-40 max-w-md mx-auto bg-blue-50'>
+    <div className='relative p-4 py-40 pt-35 max-w-md mx-auto bg-blue-50'>
+      <BackButton />
       <motion.h1
         className='text-2xl font-bold mb-6 text-blue-900 relative z-10'
         initial={{ opacity: 0, y: -20 }}

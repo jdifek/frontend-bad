@@ -9,6 +9,7 @@ import { FaCheck, FaTimes, FaCalendarAlt } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 import Calendar from "react-calendar";
 import "react-calendar/dist/Calendar.css";
+import { BackButton } from "../components/BackButton";
 
 type Supplement = {
   name: string;
@@ -267,7 +268,9 @@ export const MyCourse = () => {
   }
 
   return (
-    <div className="relative p-4 py-40 max-w-md mx-auto bg-blue-50">
+    <div className="relative p-4 py-40 pt-35 max-w-md mx-auto bg-blue-50">
+      <BackButton />
+
       <motion.h1
         className="text-2xl font-bold mb-6 text-blue-900"
         initial={{ opacity: 0, y: -20 }}
@@ -355,7 +358,9 @@ export const MyCourse = () => {
             transition={{ duration: 0.5 }}
           >
             <div className="flex items-center justify-between mb-1">
-              <h2 className="text-lg font-medium text-blue-900">История приёма</h2>
+              <h2 className="text-lg font-medium text-blue-900">
+                История приёма
+              </h2>
               <button
                 onClick={() => setShowCalendar(!showCalendar)}
                 className="text-blue-600 hover:text-blue-800"
@@ -376,7 +381,11 @@ export const MyCourse = () => {
                     onChange={(value: any) => {
                       if (value instanceof Date) {
                         setSelectedDate(value);
-                      } else if (Array.isArray(value) && value.length > 0 && value[0] instanceof Date) {
+                      } else if (
+                        Array.isArray(value) &&
+                        value.length > 0 &&
+                        value[0] instanceof Date
+                      ) {
                         setSelectedDate(value[0]); // Для диапазона берем первую дату
                       }
                     }}
@@ -385,8 +394,12 @@ export const MyCourse = () => {
                     tileClassName={({ date }) => {
                       const progress = getProgressForDate(date);
                       if (progress.length > 0) {
-                        const allTaken = progress.every((p) => p.status === "TAKEN");
-                        const someSkipped = progress.some((p) => p.status === "SKIPPED");
+                        const allTaken = progress.every(
+                          (p) => p.status === "TAKEN"
+                        );
+                        const someSkipped = progress.some(
+                          (p) => p.status === "SKIPPED"
+                        );
                         return allTaken && !someSkipped
                           ? "bg-green-100"
                           : someSkipped
@@ -402,21 +415,25 @@ export const MyCourse = () => {
                     </h3>
                     {getProgressForDate(selectedDate).length > 0 ? (
                       <ul className="text-blue-700">
-                        {getProgressForDate(selectedDate).map((progress, index) => (
-                          <li key={index} className="py-1 flex items-center">
-                            <span>{progress.supplement}:</span>
-                            <span className="ml-2">
-                              {progress.status === "TAKEN" ? (
-                                <FaCheck className="text-green-600" />
-                              ) : (
-                                <FaTimes className="text-red-600" />
-                              )}
-                            </span>
-                          </li>
-                        ))}
+                        {getProgressForDate(selectedDate).map(
+                          (progress, index) => (
+                            <li key={index} className="py-1 flex items-center">
+                              <span>{progress.supplement}:</span>
+                              <span className="ml-2">
+                                {progress.status === "TAKEN" ? (
+                                  <FaCheck className="text-green-600" />
+                                ) : (
+                                  <FaTimes className="text-red-600" />
+                                )}
+                              </span>
+                            </li>
+                          )
+                        )}
                       </ul>
                     ) : (
-                      <p className="text-sm text-blue-700">Нет данных за этот день.</p>
+                      <p className="text-sm text-blue-700">
+                        Нет данных за этот день.
+                      </p>
                     )}
                   </div>
                 </motion.div>

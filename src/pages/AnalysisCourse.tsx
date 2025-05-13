@@ -6,6 +6,7 @@ import { IoCalendarOutline, IoDocumentAttachOutline } from 'react-icons/io5';
 import { Slide, toast } from 'react-toastify';
 import $api from '../api/http';
 import { useAuth } from '../helpers/context/AuthContext';
+import { BackButton } from '../components/BackButton';
 
 type Supplement = {
   name: string;
@@ -186,7 +187,9 @@ export const AnalysisCourse = () => {
   }
 
   return (
-    <div className='p-4 py-40 max-w-md mx-auto'>
+    <div className='p-4 py-40 pt-35 max-w-md mx-auto'>
+      <BackButton />
+
       <motion.h1
         className='text-2xl font-bold mb-6 text-gray-700'
         initial={{ opacity: 0, y: -20 }}

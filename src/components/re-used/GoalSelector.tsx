@@ -2,8 +2,9 @@ import { useState } from "react";
 import { motion } from "framer-motion";
 import { useAuth } from "../../helpers/context/AuthContext";
 import $api from "../../api/http";
+import { toast, Slide } from "react-toastify";
 
-const goals = [
+const defaultGoals = [
   "Повысить концентрацию",
   "Энергия / бодрость",
   "Улучшить сон",
@@ -12,7 +13,6 @@ const goals = [
   "Набор массы",
   "Улучшить память",
   "Повысить тестостерон",
-  "Своя цель",
 ];
 
 type GoalSelectorProps = {
@@ -24,57 +24,112 @@ type GoalSelectorProps = {
 export const GoalSelector = ({ dietPreference, onSelect, setDietPreference }: GoalSelectorProps) => {
   const [selectedGoals, setSelectedGoals] = useState<string[]>([]);
   const [customGoal, setCustomGoal] = useState<string>("");
+  const [customGoals, setCustomGoals] = useState<string[]>([]);
   const { user, isLoading: authLoading } = useAuth();
+  const [isCustomGoalActive, setIsCustomGoalActive] = useState<boolean>(false);
 
   const trackAnalytics = async (goals: string[]) => {
     if (authLoading || !user?.telegramId) {
-      console.warn('Cannot track analytics: user not authenticated');
+      console.warn("Cannot track analytics: user not authenticated");
       return;
     }
 
     try {
-      await $api.post('/api/courses/analytics/goals', {
+      await $api.post("/api/courses/analytics/goals", {
         telegramId: user.telegramId,
         goals,
       });
-      console.log('Goal analytics tracked:', goals);
+      console.log("Goal analytics tracked:", goals);
     } catch (error) {
-      console.error('Error tracking goal analytics:', error);
+      console.error("Error tracking goal analytics:", error);
     }
   };
 
   const handleSelect = (goal: string) => {
-    let updatedGoals: string[];
+    let updatedGoals = [...selectedGoals];
+
     if (goal === "Своя цель") {
-      updatedGoals = [goal];
-      setCustomGoal("");
-    } else {
-      const isSelected = selectedGoals.includes(goal);
-      if (isSelected) {
-        updatedGoals = selectedGoals.filter((g) => g !== goal);
-      } else if (selectedGoals.length < 2) {
-        updatedGoals = [...selectedGoals, goal];
+      // Переключаем поле ввода
+      if (isCustomGoalActive) {
+        setIsCustomGoalActive(false);
+        setCustomGoal("");
       } else {
-        updatedGoals = selectedGoals;
+        setIsCustomGoalActive(true);
+      }
+    } else {
+      // Обработка стандартных и пользовательских целей
+      if (updatedGoals.includes(goal)) {
+        // Удаляем цель, если она уже выбрана
+        updatedGoals = updatedGoals.filter((g) => g !== goal);
+        if (customGoals.includes(goal)) {
+          // Удаляем из пользовательских целей
+          setCustomGoals(customGoals.filter((g) => g !== goal));
+        }
+      } else if (updatedGoals.length < 2) {
+        // Добавляем цель, если выбрано меньше двух
+        updatedGoals.push(goal);
+      } else {
+        toast.error("Можно выбрать не более двух целей!", {
+          position: "bottom-center",
+          autoClose: 3000,
+          theme: "light",
+          transition: Slide,
+        });
       }
     }
+
     setSelectedGoals(updatedGoals);
-    if (updatedGoals.length > 0 && updatedGoals[0] !== "Своя цель") {
-      onSelect(updatedGoals);
+    onSelect(updatedGoals);
+    if (updatedGoals.length > 0) {
       trackAnalytics(updatedGoals);
     }
   };
 
   const handleCustomGoalSubmit = () => {
     if (customGoal.trim()) {
-      const updatedGoals = [customGoal];
+      const newCustomGoal = customGoal.trim();
+      if (allGoals.includes(newCustomGoal)) {
+        toast.error("Эта цель уже существует!", {
+          position: "bottom-center",
+          autoClose: 3000,
+          theme: "light",
+          transition: Slide,
+        });
+        return;
+      }
+
+      let updatedGoals = [...selectedGoals];
+      if (updatedGoals.length < 2) {
+        updatedGoals.push(newCustomGoal);
+        setCustomGoals([...customGoals, newCustomGoal]);
+      } else {
+        toast.error("Можно выбрать не более двух целей!", {
+          position: "bottom-center",
+          autoClose: 3000,
+          theme: "light",
+          transition: Slide,
+        });
+        return;
+      }
+
       setSelectedGoals(updatedGoals);
+      setCustomGoal("");
+      setIsCustomGoalActive(true); // Оставляем поле открытым
       onSelect(updatedGoals);
       trackAnalytics(updatedGoals);
+      toast.success("Цель успешно добавлена!", {
+        position: "bottom-center",
+        autoClose: 3000,
+        theme: "light",
+        transition: Slide,
+      });
     }
   };
 
   const isGoalSelected = (goal: string) => selectedGoals.includes(goal);
+
+  // Комбинируем стандартные и пользовательские цели
+  const allGoals = [...defaultGoals, ...customGoals, "Своя цель"];
 
   return (
     <div className="mb-6">
@@ -83,30 +138,36 @@ export const GoalSelector = ({ dietPreference, onSelect, setDietPreference }: Go
       </h2>
 
       <div className="grid grid-cols-2 gap-3">
-        {goals.map((goal) => (
+        {allGoals.map((goal) => (
           <motion.button
             key={goal}
             className={`p-3 text-sm rounded-xl border ${
               isGoalSelected(goal)
                 ? "bg-blue-600 text-white border-blue-600"
-                : goal === "Своя цель"
+                : goal === "Своя цель" && isCustomGoalActive
                 ? "bg-yellow-500 text-white border-yellow-500 hover:bg-yellow-600"
+                : customGoals.includes(goal)
+                ? "bg-green-500 text-white border-green-500 hover:bg-green-600"
                 : "bg-white text-blue-900 border-gray-300 hover:border-blue-600"
             } transition-all shadow-sm`}
             onClick={() => handleSelect(goal)}
             whileHover={{ scale: 1.03 }}
             whileTap={{ scale: 0.97 }}
+            initial={{ opacity: 0, scale: 0.8 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.3 }}
           >
             {goal}
           </motion.button>
         ))}
       </div>
-      {selectedGoals.includes("Своя цель") && (
+
+      {isCustomGoalActive && (
         <div className="mt-4">
           <input
             type="text"
             value={customGoal}
-            onChange={(e) => setCustomGoal(e.target.value)}
+            onChange={(e) => setCustomGoal(e.target.value.slice(0, 50))}
             className="w-full p-3 rounded-xl border border-gray-300 focus:border-blue-600 focus:outline-none bg-white text-blue-900"
             placeholder="Введите вашу цель"
           />
@@ -121,6 +182,7 @@ export const GoalSelector = ({ dietPreference, onSelect, setDietPreference }: Go
           </motion.button>
         </div>
       )}
+
       <div className="mb-6 mt-3">
         <h2 className="text-lg font-semibold text-blue-900 mb-1">
           Диетические предпочтения:
