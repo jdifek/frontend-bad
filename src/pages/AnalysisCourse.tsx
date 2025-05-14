@@ -8,6 +8,7 @@ import $api from '../api/http';
 import { useAuth } from '../helpers/context/AuthContext';
 import { BackButton } from '../components/BackButton';
 
+// Type definitions remain unchanged
 type Supplement = {
   name: string;
   dose?: string;
@@ -46,6 +47,14 @@ export const AnalysisCourse = () => {
   const [loading, setLoading] = useState<boolean>(false);
   const { user, isLoading: authLoading } = useAuth();
 
+  // Function to truncate file name
+  const truncateFileName = (name: string, maxLength: number = 20) => {
+    if (name.length <= maxLength) return name;
+    const extension = name.split('.').pop();
+    const nameWithoutExt = name.substring(0, name.lastIndexOf('.'));
+    return `${nameWithoutExt.substring(0, maxLength - 3 - (extension?.length || 0))}...${extension}`;
+  };
+
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       const uploadedFile = e.target.files[0];
@@ -82,6 +91,7 @@ export const AnalysisCourse = () => {
     }
   };
 
+  // Other functions (handleGenerateCourse, handleAddReminder) remain unchanged
   const handleGenerateCourse = async () => {
     if (authLoading || !user?.telegramId) {
       setError('Пользователь не авторизован');
@@ -235,7 +245,13 @@ export const AnalysisCourse = () => {
       {file && (
         <>
           <div className='mb-6'>
-            <p className='text-blue-900 text-sm'>Загружен файл: {file.name}</p>
+            {loading ? (
+              <p className='text-blue-900 text-sm'>Загрузка анализов…</p>
+            ) : (
+              <p className='text-blue-900 text-sm break-all'>
+                Загружен файл: {truncateFileName(file.name)}
+              </p>
+            )}
             <motion.button
               onClick={() => {
                 setFile(null);
