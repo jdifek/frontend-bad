@@ -574,57 +574,59 @@ export const FoodAnalysis = () => {
 
       {/* Manual Input Form */}
       {showManualInput && showModal && (
-        <motion.div
-          className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-        >
-          <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-300">
-            <h3 className="text-lg font-semibold text-blue-900 mb-3">
-              Ручной ввод
-            </h3>
-            <input
-              type="text"
-              placeholder="Название блюда"
-              value={manualInput.dish}
-              onChange={(e) =>
-                setManualInput({ ...manualInput, dish: e.target.value })
-              }
-              className="w-full p-2 mb-2 border rounded-lg"
-            />
-            <input
-              type="number"
-              placeholder="Вес (г)"
-              value={manualInput.grams}
-              onChange={(e) =>
-                setManualInput({ ...manualInput, grams: e.target.value })
-              }
-              className="w-full p-2 mb-2 border rounded-lg"
-            />
-            <div className="flex gap-2">
-              <motion.button
-                onClick={handleManualInputSubmit}
-                className="bg-green-200 text-gray-700 p-2 rounded-lg flex-1"
-                whileHover={{ scale: 1.03 }}
-                whileTap={{ scale: 0.97 }}
-              >
-                Сохранить
-              </motion.button>
-              <motion.button
-                onClick={() => {
-                  setShowManualInput(false);
-                  setShowModal(true);
-                }}
-                className="bg-red-200 text-gray-700 p-2 rounded-lg flex-1"
-                whileHover={{ scale: 1.03 }}
-                whileTap={{ scale: 0.97 }}
-              >
-                Отмена
-              </motion.button>
-            </div>
-          </div>
-        </motion.div>
-      )}
+    <motion.div
+      className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+    >
+      <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-300">
+        <h3 className="text-lg font-semibold text-blue-900 mb-3">
+          Ручной ввод
+        </h3>
+        <input
+          type="text"
+          placeholder="Название блюда"
+          value={manualInput.dish}
+          onChange={(e) =>
+            setManualInput({ ...manualInput, dish: e.target.value })
+          }
+          className="w-full p-2 mb-2 border rounded-lg"
+        />
+        <input
+          type="number"
+          placeholder="Вес (г)"
+          value={manualInput.grams}
+          onChange={(e) =>
+            setManualInput({ ...manualInput, grams: e.target.value })
+          }
+          className="w-full p-2 mb-2 border rounded-lg"
+        />
+        <div className="flex gap-2">
+          <motion.button
+            onClick={handleManualInputSubmit}
+            className="bg-green-200 text-gray-700 p-2 rounded-lg flex-1"
+            disabled={loading} // Disable button when loading
+            whileHover={{ scale: loading ? 1 : 1.03 }} // Prevent hover animation when disabled
+            whileTap={{ scale: loading ? 1 : 0.97 }} // Prevent tap animation when disabled
+          >
+            {loading ? "Анализ..." : "Сохранить"} {/* Change text based on loading state */}
+          </motion.button>
+          <motion.button
+            onClick={() => {
+              setShowManualInput(false);
+              setShowModal(true);
+            }}
+            className="bg-red-200 text-gray-700 p-2 rounded-lg flex-1"
+            disabled={loading} // Optionally disable Cancel button during loading
+            whileHover={{ scale: loading ? 1 : 1.03 }}
+            whileTap={{ scale: loading ? 1 : 0.97 }}
+          >
+            Отмена
+          </motion.button>
+        </div>
+      </div>
+    </motion.div>
+  )}
 
       {analysis && <FoodAnalysisResult analysis={analysis} />}
     </div>
