@@ -8,7 +8,6 @@ import { FoodAnalysisResult } from "../components/FoodAnalysisResult";
 import $api from "../api/http";
 import { Slide, toast } from "react-toastify";
 import { useAuth } from "../helpers/context/AuthContext";
-import { BackButton } from "../components/BackButton";
 
 type Analysis = {
   dish: string;
@@ -52,7 +51,6 @@ export const FoodAnalysis = () => {
   const { user, isLoading: authLoading } = useAuth();
 
   const [calorieGoal, setCalorieGoal] = useState<number>(user?.goal || 0);
-  const [caloriesBurned] = useState<number>(0);
   const [meals, setMeals] = useState<Meals>({
     Breakfast: [],
     Lunch: [],
@@ -133,19 +131,48 @@ export const FoodAnalysis = () => {
     }
 
     try {
-      await $api.put(`/api/meals/user/${user.telegramId}`, { goal: newGoal });
+      const token = localStorage.getItem("accessToken");
+      if (!token) {
+        setError("Токен авторизации отсутствует.");
+        return;
+      }
+
+      console.log(
+        "Updating calorie goal to:",
+        newGoal,
+        "for user:",
+        user.telegramId
+      );
+
+      const response = await $api.put(
+        `/api/meals/user/${user.telegramId}`,
+        { goal: newGoal }, // Убедимся, что данные отправляются в правильном формате
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      console.log("API response:", response.data);
       setCalorieGoal(newGoal);
       toast.success("Цель калорий обновлена!", {
         position: "bottom-center",
         theme: "light",
         transition: Slide,
       });
-    } catch (error) {
-      console.error("Error updating calorie goal:", error);
-      setError("Не удалось обновить цель калорий.");
+    } catch (error: any) {
+      console.error(
+        "Error updating calorie goal:",
+        error.response?.data || error.message
+      );
+      setError(
+        `Не удалось обновить цель калорий: ${
+          error.response?.data?.message || error.message
+        }`
+      );
     }
   };
-
   const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       const file = e.target.files[0];
@@ -286,11 +313,16 @@ export const FoodAnalysis = () => {
   const totalConsumed = Object.values(meals).reduce(
     (sum, mealsArray) =>
       sum +
-      mealsArray.reduce((acc: number, meal: Meal) => acc + meal.calories, 0),
+      mealsArray
+        .filter((meal: Meal) => {
+          const mealDate = meal.date.split("T")[0];
+          const selectedDateString = getDateString(selectedDate);
+          return mealDate === selectedDateString;
+        })
+        .reduce((acc: number, meal: Meal) => acc + meal.calories, 0),
     0
   );
-  const remaining = calorieGoal + caloriesBurned - totalConsumed;
-
+  const remaining = calorieGoal - totalConsumed;
   // Функция для получения приёмов пищи за конкретную дату
   const getMealsForDate = (date: Date) => {
     const dateString = getDateString(date);
@@ -312,8 +344,6 @@ export const FoodAnalysis = () => {
 
   return (
     <div className="p-4 py-40 pt-35 max-w-md mx-auto">
-      <BackButton />
-
       <motion.h1
         className="text-2xl font-bold mb-6 text-gray-700"
         initial={{ opacity: 0, y: -20 }}
@@ -322,51 +352,6 @@ export const FoodAnalysis = () => {
       >
         Анализ питания
       </motion.h1>
-      {error && (
-        <motion.div
-          className="bg-red-100 text-red-700 p-3 rounded-lg mb-4"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-        >
-          {error}
-        </motion.div>
-      )}
-
-      {/* Calorie Progress Section */}
-      <motion.div
-        className="bg-white rounded-xl p-4 mb-6 shadow-sm border border-gray-300"
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-      >
-        <h2 className="text-lg font-semibold text-blue-900 mb-3">
-          Calorie Progress
-        </h2>
-        <div className="flex justify-between text-sm text-gray-700">
-          <span>Goal</span>
-          <input
-            type="number"
-            value={calorieGoal}
-            onChange={(e) => updateCalorieGoal(parseInt(e.target.value))}
-            className="w-20 p-1 border rounded-lg text-right"
-          />
-        </div>
-        <div className="flex justify-between text-sm text-gray-700">
-          <span>Burned</span>
-          <span>{caloriesBurned}</span>
-        </div>
-        <div className="flex justify-between text-sm text-gray-700">
-          <span>Consumed</span>
-          <span>{totalConsumed}</span>
-        </div>
-        <div className="flex justify-between text-sm font-bold text-green-600 mt-2">
-          <span>Remaining</span>
-          <span>{remaining}</span>
-        </div>
-        <div className="text-center text-xs text-gray-500 mt-2">
-          {calorieGoal} + {caloriesBurned} - {totalConsumed} = {remaining}
-        </div>
-      </motion.div>
-
       {/* Календарь */}
       <motion.div
         className="bg-white p-4 rounded-xl shadow-sm mb-6"
@@ -374,13 +359,10 @@ export const FoodAnalysis = () => {
         animate={{ opacity: 1 }}
         transition={{ duration: 0.5 }}
       >
-        <div className="flex items-center justify-between mb-1">
-          <h2 className="text-lg font-medium text-blue-900">
-            История приёмов пищи
-          </h2>
+        <div className="flex mx-auto items-center justify-center mb-2">
           <button
             onClick={() => setShowCalendar(!showCalendar)}
-            className="text-blue-600 hover:text-blue-800"
+            className="text-blue-600 hover:text-blue-800 transition-colors"
             title={showCalendar ? "Скрыть календарь" : "Показать календарь"}
           >
             <FaCalendarAlt size={20} />
@@ -389,11 +371,64 @@ export const FoodAnalysis = () => {
         <AnimatePresence>
           {showCalendar && (
             <motion.div
-              initial={{ opacity: 0, height: 0 }}
-              animate={{ opacity: 1, height: "auto" }}
-              exit={{ opacity: 0, height: 0 }}
-              transition={{ duration: 0.3, ease: "easeInOut" }}
+              initial={{ opacity: 0, y: -20, scale: 0.9 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: -20, scale: 0.9 }}
+              transition={{ duration: 0.4, ease: "easeOut" }}
+              className="overflow-hidden"
             >
+              <div className="flex items-center justify-center mb-4 bg-gray-100 p-2 rounded-lg">
+                <button
+                  onClick={() =>
+                    setSelectedDate(
+                      (prev) => new Date(prev.setDate(prev.getDate() - 1))
+                    )
+                  }
+                  className="text-blue-600 hover:text-blue-800 p-1 transition-colors"
+                >
+                  ←
+                </button>
+                <span className="mx-4 text-lg font-semibold text-gray-800 flex items-center">
+                  <svg
+                    className="w-5 h-5 mr-2"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
+                    />
+                  </svg>
+                  {selectedDate.toLocaleDateString("ru-RU", {
+                    weekday: "long",
+                    day: "numeric",
+                    month: "long",
+                  }) ===
+                  new Date().toLocaleDateString("ru-RU", {
+                    weekday: "long",
+                    day: "numeric",
+                    month: "long",
+                  })
+                    ? "Сегодня"
+                    : selectedDate.toLocaleDateString("ru-RU", {
+                        day: "numeric",
+                        month: "long",
+                      })}
+                </span>
+                <button
+                  onClick={() =>
+                    setSelectedDate(
+                      (prev) => new Date(prev.setDate(prev.getDate() + 1))
+                    )
+                  }
+                  className="text-blue-600 hover:text-blue-800 p-1 transition-colors"
+                >
+                  →
+                </button>
+              </div>
               <Calendar
                 onChange={(value) => {
                   if (value instanceof Date) {
@@ -410,25 +445,41 @@ export const FoodAnalysis = () => {
                 className="w-full mb-4 mx-auto rounded-lg border border-blue-200"
                 tileClassName={({ date }) => {
                   const mealsForDate = getMealsForDate(date);
-                  return mealsForDate.length > 0 ? "bg-green-100" : "";
+                  const isToday =
+                    date.toDateString() === new Date().toDateString();
+                  return [
+                    mealsForDate.length > 0 && "bg-green-100",
+                    isToday && "bg-blue-100 text-blue-900 font-semibold",
+                  ]
+                    .filter(Boolean)
+                    .join(" ");
                 }}
+                prev2Label={null}
+                next2Label={null}
+                prevLabel={<span className="hidden">Пред</span>}
+                nextLabel={<span className="hidden">След</span>}
               />
               <div>
                 <h3 className="text-sm font-medium text-blue-900 mb-2">
-                  Приёмы пищи за {selectedDate.toLocaleDateString()}:
+                  Приёмы пищи за{" "}
+                  {selectedDate.toLocaleDateString("ru-RU", {
+                    day: "numeric",
+                    month: "long",
+                    year: "numeric",
+                  })}
+                  :
                 </h3>
                 {getMealsForDate(selectedDate).length > 0 ? (
-                  <div></div>
-                  // <ul className="text-blue-700">
-                  //   {getMealsForDate(selectedDate).map((meal, index) => (
-                  //     <li key={index} className="py-1 flex justify-between">
-                  //       <span>
-                  //         {meal.type || "Без типа"}: {meal.dish}
-                  //       </span>
-                  //       <span>{meal.calories} ккал</span>
-                  //     </li>
-                  //   ))}
-                  // </ul>
+                  <ul className="text-blue-700">
+                    {getMealsForDate(selectedDate).map((meal, index) => (
+                      <li key={index} className="py-1 flex justify-between">
+                        <span>
+                          {meal.type || "Без типа"}: {meal.dish}
+                        </span>
+                        <span>{meal.calories} ккал</span>
+                      </li>
+                    ))}
+                  </ul>
                 ) : (
                   <p className="text-sm text-blue-700">
                     Нет данных за этот день.
@@ -438,6 +489,48 @@ export const FoodAnalysis = () => {
             </motion.div>
           )}
         </AnimatePresence>
+      </motion.div>
+      {error && (
+        <motion.div
+          className="bg-red-100 text-red-700 p-3 rounded-lg mb-4"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+        >
+          {error}
+        </motion.div>
+      )}
+
+      {/* Calorie Progress Section */}
+      <motion.div
+        className="bg-white rounded-xl p-4 mb-6 shadow-sm border border-gray-300"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+      >
+        <div className="flex justify-between items-center mb-3">
+          <h2 className="text-lg font-semibold text-gray-800">
+            Прогресс калорий
+          </h2>
+        </div>
+        <div className="flex justify-between items-center text-lg font-bold text-gray-800">
+          <input
+            type="number"
+            value={calorieGoal}
+            onChange={(e) => setCalorieGoal(parseInt(e.target.value) || 0)}
+            onBlur={(e) => updateCalorieGoal(parseInt(e.target.value) || 0)}
+            className="w-20 p-1 border rounded-lg text-right"
+          />
+          <span className="text-gray-500">-</span>
+          <span>{totalConsumed}</span>
+          <span className="text-gray-500">=</span>
+          <span className={remaining >= 0 ? "text-orange-600" : "text-red-600"}>
+            {remaining}
+          </span>
+        </div>
+        <div className="flex justify-between text-xs text-gray-500 mt-2">
+          <span>Цель</span>
+          <span>Потреблено</span>
+          <span>Осталось</span>
+        </div>
       </motion.div>
 
       {/* Meal Sections */}
@@ -574,59 +667,60 @@ export const FoodAnalysis = () => {
 
       {/* Manual Input Form */}
       {showManualInput && showModal && (
-    <motion.div
-      className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4"
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-    >
-      <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-300">
-        <h3 className="text-lg font-semibold text-blue-900 mb-3">
-          Ручной ввод
-        </h3>
-        <input
-          type="text"
-          placeholder="Название блюда"
-          value={manualInput.dish}
-          onChange={(e) =>
-            setManualInput({ ...manualInput, dish: e.target.value })
-          }
-          className="w-full p-2 mb-2 border rounded-lg"
-        />
-        <input
-          type="number"
-          placeholder="Вес (г)"
-          value={manualInput.grams}
-          onChange={(e) =>
-            setManualInput({ ...manualInput, grams: e.target.value })
-          }
-          className="w-full p-2 mb-2 border rounded-lg"
-        />
-        <div className="flex gap-2">
-          <motion.button
-            onClick={handleManualInputSubmit}
-            className="bg-green-200 text-gray-700 p-2 rounded-lg flex-1"
-            disabled={loading} // Disable button when loading
-            whileHover={{ scale: loading ? 1 : 1.03 }} // Prevent hover animation when disabled
-            whileTap={{ scale: loading ? 1 : 0.97 }} // Prevent tap animation when disabled
-          >
-            {loading ? "Анализ..." : "Сохранить"} {/* Change text based on loading state */}
-          </motion.button>
-          <motion.button
-            onClick={() => {
-              setShowManualInput(false);
-              setShowModal(true);
-            }}
-            className="bg-red-200 text-gray-700 p-2 rounded-lg flex-1"
-            disabled={loading} // Optionally disable Cancel button during loading
-            whileHover={{ scale: loading ? 1 : 1.03 }}
-            whileTap={{ scale: loading ? 1 : 0.97 }}
-          >
-            Отмена
-          </motion.button>
-        </div>
-      </div>
-    </motion.div>
-  )}
+        <motion.div
+          className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+        >
+          <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-300">
+            <h3 className="text-lg font-semibold text-blue-900 mb-3">
+              Ручной ввод
+            </h3>
+            <input
+              type="text"
+              placeholder="Название блюда"
+              value={manualInput.dish}
+              onChange={(e) =>
+                setManualInput({ ...manualInput, dish: e.target.value })
+              }
+              className="w-full p-2 mb-2 border rounded-lg"
+            />
+            <input
+              type="number"
+              placeholder="Вес (г)"
+              value={manualInput.grams}
+              onChange={(e) =>
+                setManualInput({ ...manualInput, grams: e.target.value })
+              }
+              className="w-full p-2 mb-2 border rounded-lg"
+            />
+            <div className="flex gap-2">
+              <motion.button
+                onClick={handleManualInputSubmit}
+                className="bg-green-200 text-gray-700 p-2 rounded-lg flex-1"
+                disabled={loading} // Disable button when loading
+                whileHover={{ scale: loading ? 1 : 1.03 }} // Prevent hover animation when disabled
+                whileTap={{ scale: loading ? 1 : 0.97 }} // Prevent tap animation when disabled
+              >
+                {loading ? "Анализ..." : "Сохранить"}{" "}
+                {/* Change text based on loading state */}
+              </motion.button>
+              <motion.button
+                onClick={() => {
+                  setShowManualInput(false);
+                  setShowModal(true);
+                }}
+                className="bg-red-200 text-gray-700 p-2 rounded-lg flex-1"
+                disabled={loading} // Optionally disable Cancel button during loading
+                whileHover={{ scale: loading ? 1 : 1.03 }}
+                whileTap={{ scale: loading ? 1 : 0.97 }}
+              >
+                Отмена
+              </motion.button>
+            </div>
+          </div>
+        </motion.div>
+      )}
 
       {analysis && <FoodAnalysisResult analysis={analysis} />}
     </div>

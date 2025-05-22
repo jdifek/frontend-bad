@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { IoAdd, IoCamera, IoClose, IoArrowBack } from 'react-icons/io5';
 
@@ -9,8 +9,8 @@ type Supplement = {
 };
 
 type SupplementInputProps = {
-  supplements: Supplement[]; // Новое пропс для списка добавок
-  onAdd: (supplement: Supplement, callback?: (recognizedSupplements: Supplement[]) => void) => void; // Обновлённый тип
+  supplements: Supplement[];
+  onAdd: (supplement: Supplement, callback?: (recognizedSupplements: Supplement[]) => void) => void;
   onRemove: (supplementName: string) => void;
   onPhotosChange?: (photos: File[]) => void;
 };
@@ -19,6 +19,7 @@ export const SupplementInput = ({ supplements, onAdd, onRemove, onPhotosChange }
   const [inputMethod, setInputMethod] = useState<'manual' | 'photo' | null>(null);
   const [name, setName] = useState('');
   const [photos, setPhotos] = useState<File[]>([]);
+  const fileInputRef = useRef<HTMLInputElement>(null); // Реф для инпута файла
 
   const commonSupplements = [
     'Омега-3',
@@ -47,20 +48,23 @@ export const SupplementInput = ({ supplements, onAdd, onRemove, onPhotosChange }
   const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
       const newPhotos = Array.from(e.target.files);
-      setPhotos([...photos, ...newPhotos]);
-      onPhotosChange?.([...photos, ...newPhotos]);
+      const updatedPhotos = [...photos, ...newPhotos];
+      setPhotos(updatedPhotos);
+      onPhotosChange?.(updatedPhotos);
 
       for (const file of newPhotos) {
         try {
           await new Promise<void>((resolve) => {
-            // eslint-disable-next-line @typescript-eslint/no-unused-vars
-            onAdd({ name: '', file }, () => {
-              resolve();
-            });
+            onAdd({ name: '', file }, () => resolve());
           });
         } catch (error) {
           console.error('Error processing photo:', error);
         }
+      }
+
+      // Сброс значения инпута после загрузки
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
       }
     }
   };
@@ -73,6 +77,11 @@ export const SupplementInput = ({ supplements, onAdd, onRemove, onPhotosChange }
       onRemove(removedSupplement.name);
     }
     onPhotosChange?.(updatedPhotos);
+
+    // Сброс значения инпута после удаления
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
   };
 
   return (
@@ -201,6 +210,7 @@ export const SupplementInput = ({ supplements, onAdd, onRemove, onPhotosChange }
               multiple
               onChange={handlePhotoUpload}
               className='hidden'
+              ref={fileInputRef} // Привязываем реф
             />
             <motion.div
               className='p-4 bg-blue-50 rounded-xl border border-dashed border-blue-600 text-center cursor-pointer'

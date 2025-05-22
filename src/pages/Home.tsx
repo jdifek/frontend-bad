@@ -1,12 +1,17 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { IoFlask, IoRestaurant, IoInformationCircle } from "react-icons/io5";
 import { ImTarget } from "react-icons/im";
 import { AboutModal } from "../components/AboutModal";
+import { FaBook } from "react-icons/fa";
+import { useAuth } from "../helpers/context/AuthContext";
+import $api from "../api/http";
 
 export const Home = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [courses, setCourses] = useState(false);
+  const { user, isLoading: authLoading } = useAuth();
 
   const buttonVariants = {
     hover: {
@@ -16,6 +21,23 @@ export const Home = () => {
     },
     tap: { scale: 0.97 },
   };
+
+  useEffect(() => {
+    const fetchCourses = async () => {
+      if (authLoading || !user?.telegramId) return;
+
+      try {
+        const res = await $api.get(
+          `/api/my-course/all-courses?telegramId=${user.telegramId}`
+        );
+        setCourses(res.data.courses ? true : false);
+      } catch (error) {
+        console.error("Error fetching courses:", error);
+      }
+    };
+
+    fetchCourses();
+  }, [user, authLoading]);
 
   return (
     <div className="p-6 py-40 max-w-md mx-auto relative bg-blue-50">
@@ -61,6 +83,15 @@ export const Home = () => {
           >
             <IoRestaurant className="mr-3 text-xl text-blue-600" />
             <span className="font-medium">Анализ питания по фото</span>
+          </Link>
+        </motion.div>
+        <motion.div variants={buttonVariants} whileHover="hover" whileTap="tap">
+          <Link
+            to={courses === true ? "/my-course" : "/quick-course"}
+            className="flex items-center justify-center w-full p-4 bg-white text-blue-900 rounded-xl shadow-md border border-gray-300 hover:border-blue-600"
+          >
+            <FaBook className="mr-3 text-xl text-blue-600" />
+            <span className="font-medium">Мои курсы</span>
           </Link>
         </motion.div>
         <motion.div variants={buttonVariants} whileHover="hover" whileTap="tap">

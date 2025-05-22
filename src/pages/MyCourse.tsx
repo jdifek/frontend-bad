@@ -9,7 +9,6 @@ import { FaCheck, FaTimes, FaCalendarAlt } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 import Calendar from "react-calendar";
 import "react-calendar/dist/Calendar.css";
-import { BackButton } from "../components/BackButton";
 
 type Supplement = {
   name: string;
@@ -269,7 +268,6 @@ export const MyCourse = () => {
 
   return (
     <div className="relative p-4 py-40 pt-35 max-w-md mx-auto bg-blue-50">
-      <BackButton />
 
       <motion.h1
         className="text-2xl font-bold mb-6 text-blue-900"
@@ -455,15 +453,21 @@ export const MyCourse = () => {
                 <tr className="text-blue-700">
                   <th className="p-2">Время</th>
                   <th className="p-2">Добавки</th>
-                  <th className="p-2">Статус</th>
+                    <th className="p-2">
+                    Статус ({selectedDate.toLocaleDateString()})
+                    </th>
                 </tr>
               </thead>
               <tbody>
                 {selectedCourse.schedule.morning.length > 0 && (
                   <tr>
                     <td className="p-2">Утро (08:00)</td>
-                    <td className="p-2">
-                      {selectedCourse.schedule.morning.join(", ")}
+                    <td className="p-2 gap-1 flex flex-col">
+                        {selectedCourse.schedule.morning.map((supplement, index) => (
+                        <span key={index} className=" ">
+                          {supplement}
+                        </span>
+                        ))}
                     </td>
                     <td className="p-2">
                       {selectedCourse.schedule.morning.map((supplement) => {
@@ -474,11 +478,11 @@ export const MyCourse = () => {
                             p.date.includes(today)
                         );
                         return (
-                          <div key={supplement} className="flex gap-2 mb-2">
+                          <div key={supplement} className="flex gap-2 mb-3">
                             {progress?.status === "TAKEN" ? (
                               <FaCheck className="text-green-600" />
                             ) : progress?.status === "SKIPPED" ? (
-                              <FaTimes className="text-red-600" />
+                              <FaTimes className="text-red-600 " />
                             ) : (
                               <>
                                 <button
@@ -736,7 +740,7 @@ export const MyCourse = () => {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
           >
-            Limitless.Pharm не заменяет консультацию врача. Это рекомендации
+            ИИ-нутрициолог не заменяет консультацию врача. Это рекомендации
             общего характера, основанные на открытых данных.
           </motion.p>
         </>

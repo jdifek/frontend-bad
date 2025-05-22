@@ -6,7 +6,6 @@ import { CourseTable } from "../components/re-used/CourseTable";
 import $api from "../api/http";
 import { useAuth } from "../helpers/context/AuthContext";
 import { Slide, toast } from "react-toastify";
-import { BackButton } from "../components/BackButton";
 import { useNavigate } from "react-router-dom";
 
 type Supplement = {
@@ -242,7 +241,6 @@ export const QuickCourse = () => {
 
   return (
     <div className="relative p-4 py-40 pt-35 max-w-md mx-auto bg-blue-50">
-      <BackButton />
       <motion.h1
         className="text-2xl font-bold mb-6 text-blue-900 relative z-10"
         initial={{ opacity: 0, y: -20 }}
@@ -273,9 +271,9 @@ export const QuickCourse = () => {
       <motion.button
         onClick={handleGenerateCourse}
         className="bg-blue-600 text-white p-3 rounded-xl w-full relative z-10 font-medium shadow-md mt-4"
-        disabled={goals.length === 0 || loading}
         whileHover={{ scale: 1.03, boxShadow: "0 8px 16px rgba(0,0,0,0.08)" }}
         whileTap={{ scale: 0.97 }}
+        disabled={goals.length === 0 || loading || isAddingSupplement}
       >
         {loading
           ? "Генерация..."

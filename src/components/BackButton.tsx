@@ -13,7 +13,6 @@ export const BackButton = () => {
       whileTap={{ scale: 0.9 }}
     >
       <IoArrowBack size={24} />
-      <span className="ml-2 text-sm font-medium">Назад</span>
     </motion.button>
   );
 };
