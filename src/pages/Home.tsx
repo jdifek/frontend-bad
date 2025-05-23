@@ -30,7 +30,10 @@ export const Home = () => {
         const res = await $api.get(
           `/api/my-course/all-courses?telegramId=${user.telegramId}`
         );
-        setCourses(res.data.courses ? true : false);
+        console.log();
+
+        setCourses(res.data.courses.length > 0);
+        
       } catch (error) {
         console.error("Error fetching courses:", error);
       }

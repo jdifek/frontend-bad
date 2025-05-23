@@ -441,199 +441,191 @@ export const MyCourse = () => {
 
           {/* Таблица курса */}
           <motion.div
-            className="bg-white p-4 rounded-xl shadow-sm mb-6"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-          >
-            <h2 className="text-lg font-medium text-blue-900 mb-2">
-              Расписание
-            </h2>
-            <table className="w-full text-left">
-              <thead>
-                <tr className="text-blue-700">
-                  <th className="p-2">Время</th>
-                  <th className="p-2">Добавки</th>
-                    <th className="p-2">
-                    Статус ({selectedDate.toLocaleDateString()})
-                    </th>
-                </tr>
-              </thead>
-              <tbody>
-                {selectedCourse.schedule.morning.length > 0 && (
-                  <tr>
-                    <td className="p-2">Утро (08:00)</td>
-                    <td className="p-2 gap-1 flex flex-col">
-                        {selectedCourse.schedule.morning.map((supplement, index) => (
-                        <span key={index} className=" ">
-                          {supplement}
-                        </span>
-                        ))}
-                    </td>
-                    <td className="p-2">
-                      {selectedCourse.schedule.morning.map((supplement) => {
-                        const today = new Date().toISOString().split("T")[0];
-                        const progress = selectedCourse.progress.find(
-                          (p) =>
-                            p.supplement === supplement &&
-                            p.date.includes(today)
-                        );
-                        return (
-                          <div key={supplement} className="flex gap-2 mb-3">
-                            {progress?.status === "TAKEN" ? (
-                              <FaCheck className="text-green-600" />
-                            ) : progress?.status === "SKIPPED" ? (
-                              <FaTimes className="text-red-600 " />
-                            ) : (
-                              <>
-                                <button
-                                  onClick={() =>
-                                    handleMarkProgress(
-                                      selectedCourse.id,
-                                      supplement,
-                                      today,
-                                      "TAKEN"
-                                    )
-                                  }
-                                  className="text-green-600"
-                                >
-                                  <FaCheck />
-                                </button>
-                                <button
-                                  onClick={() =>
-                                    handleMarkProgress(
-                                      selectedCourse.id,
-                                      supplement,
-                                      today,
-                                      "SKIPPED"
-                                    )
-                                  }
-                                  className="text-red-600"
-                                >
-                                  <FaTimes />
-                                </button>
-                              </>
-                            )}
-                          </div>
-                        );
-                      })}
-                    </td>
-                  </tr>
-                )}
-                {selectedCourse.schedule.afternoon.length > 0 && (
-                  <tr>
-                    <td className="p-2">День (14:00)</td>
-                    <td className="p-2">
-                      {selectedCourse.schedule.afternoon.join(", ")}
-                    </td>
-                    <td className="p-2">
-                      {selectedCourse.schedule.afternoon.map((supplement) => {
-                        const today = new Date().toISOString().split("T")[0];
-                        const progress = selectedCourse.progress.find(
-                          (p) =>
-                            p.supplement === supplement &&
-                            p.date.includes(today)
-                        );
-                        return (
-                          <div key={supplement} className="flex gap-2 mb-2">
-                            {progress?.status === "TAKEN" ? (
-                              <FaCheck className="text-green-600" />
-                            ) : progress?.status === "SKIPPED" ? (
-                              <FaTimes className="text-red-600" />
-                            ) : (
-                              <>
-                                <button
-                                  onClick={() =>
-                                    handleMarkProgress(
-                                      selectedCourse.id,
-                                      supplement,
-                                      today,
-                                      "TAKEN"
-                                    )
-                                  }
-                                  className="text-green-600"
-                                >
-                                  <FaCheck />
-                                </button>
-                                <button
-                                  onClick={() =>
-                                    handleMarkProgress(
-                                      selectedCourse.id,
-                                      supplement,
-                                      today,
-                                      "SKIPPED"
-                                    )
-                                  }
-                                  className="text-red-600"
-                                >
-                                  <FaTimes />
-                                </button>
-                              </>
-                            )}
-                          </div>
-                        );
-                      })}
-                    </td>
-                  </tr>
-                )}
-                {selectedCourse.schedule.evening.length > 0 && (
-                  <tr>
-                    <td className="p-2">Вечер (20:00)</td>
-                    <td className="p-2">
-                      {selectedCourse.schedule.evening.join(", ")}
-                    </td>
-                    <td className="p-2">
-                      {selectedCourse.schedule.evening.map((supplement) => {
-                        const today = new Date().toISOString().split("T")[0];
-                        const progress = selectedCourse.progress.find(
-                          (p) =>
-                            p.supplement === supplement &&
-                            p.date.includes(today)
-                        );
-                        return (
-                          <div key={supplement} className="flex gap-2 mb-2">
-                            {progress?.status === "TAKEN" ? (
-                              <FaCheck className="text-green-600" />
-                            ) : progress?.status === "SKIPPED" ? (
-                              <FaTimes className="text-red-600" />
-                            ) : (
-                              <>
-                                <button
-                                  onClick={() =>
-                                    handleMarkProgress(
-                                      selectedCourse.id,
-                                      supplement,
-                                      today,
-                                      "TAKEN"
-                                    )
-                                  }
-                                  className="text-green-600"
-                                >
-                                  <FaCheck />
-                                </button>
-                                <button
-                                  onClick={() =>
-                                    handleMarkProgress(
-                                      selectedCourse.id,
-                                      supplement,
-                                      today,
-                                      "SKIPPED"
-                                    )
-                                  }
-                                  className="text-red-600"
-                                >
-                                  <FaTimes />
-                                </button>
-                              </>
-                            )}
-                          </div>
-                        );
-                      })}
-                    </td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
-          </motion.div>
+  className="bg-white p-4 rounded-xl shadow-sm mb-6"
+  initial={{ opacity: 0 }}
+  animate={{ opacity: 1 }}
+>
+  <h2 className="text-lg font-medium text-blue-900 mb-2">Расписание</h2>
+  <table className="w-full text-left">
+    <thead>
+      <tr className="text-blue-700">
+        <th className="p-2">Время</th>
+        <th className="p-2">Добавки</th>
+        <th className="p-2">Статус ({new Date().toLocaleDateString("ru-RU")})</th>
+      </tr>
+    </thead>
+    <tbody>
+      {selectedCourse.schedule.morning.length > 0 && (
+        <>
+          {selectedCourse.schedule.morning.map((supplement, index) => (
+            <tr key={`${supplement}-${index}`}>
+              <td className="p-2">{index === 0 ? "Утро (08:00)" : ""}</td>
+              <td className="p-2 text-blue-700">{supplement}</td>
+              <td className="p-2 flex items-center gap-4">
+                {(() => {
+                  const today = new Date().toISOString().split("T")[0];
+                  const progress = selectedCourse.progress.find(
+                    (p) => p.supplement === supplement && p.date.includes(today)
+                  );
+                  return (
+                    <>
+                      {progress?.status === "TAKEN" ? (
+                        <FaCheck className="text-green-600" size={20} />
+                      ) : progress?.status === "SKIPPED" ? (
+                        <FaTimes className="text-red-600" size={20} />
+                      ) : (
+                        <>
+                          <button
+                            onClick={() =>
+                              handleMarkProgress(
+                                selectedCourse.id,
+                                supplement,
+                                today,
+                                "TAKEN"
+                              )
+                            }
+                            className="text-green-600 hover:text-green-800 transition-colors"
+                          >
+                            <FaCheck size={20} />
+                          </button>
+                          <button
+                            onClick={() =>
+                              handleMarkProgress(
+                                selectedCourse.id,
+                                supplement,
+                                today,
+                                "SKIPPED"
+                              )
+                            }
+                            className="text-red-600 hover:text-red-800 transition-colors"
+                          >
+                            <FaTimes size={20} />
+                          </button>
+                        </>
+                      )}
+                    </>
+                  );
+                })()}
+              </td>
+            </tr>
+          ))}
+        </>
+      )}
+      {selectedCourse.schedule.afternoon.length > 0 && (
+        <>
+          {selectedCourse.schedule.afternoon.map((supplement, index) => (
+            <tr key={`${supplement}-${index}`}>
+              <td className="p-2">{index === 0 ? "День (14:00)" : ""}</td>
+              <td className="p-2 text-blue-700">{supplement}</td>
+              <td className="p-2 flex items-center gap-4">
+                {(() => {
+                  const today = new Date().toISOString().split("T")[0];
+                  const progress = selectedCourse.progress.find(
+                    (p) => p.supplement === supplement && p.date.includes(today)
+                  );
+                  return (
+                    <>
+                      {progress?.status === "TAKEN" ? (
+                        <FaCheck className="text-green-600" size={20} />
+                      ) : progress?.status === "SKIPPED" ? (
+                        <FaTimes className="text-red-600" size={20} />
+                      ) : (
+                        <>
+                          <button
+                            onClick={() =>
+                              handleMarkProgress(
+                                selectedCourse.id,
+                                supplement,
+                                today,
+                                "TAKEN"
+                              )
+                            }
+                            className="text-green-600 hover:text-green-800 transition-colors"
+                          >
+                            <FaCheck size={20} />
+                          </button>
+                          <button
+                            onClick={() =>
+                              handleMarkProgress(
+                                selectedCourse.id,
+                                supplement,
+                                today,
+                                "SKIPPED"
+                              )
+                            }
+                            className="text-red-600 hover:text-red-800 transition-colors"
+                          >
+                            <FaTimes size={20} />
+                          </button>
+                        </>
+                      )}
+                    </>
+                  );
+                })()}
+              </td>
+            </tr>
+          ))}
+        </>
+      )}
+      {selectedCourse.schedule.evening.length > 0 && (
+        <>
+          {selectedCourse.schedule.evening.map((supplement, index) => (
+            <tr key={`${supplement}-${index}`}>
+              <td className="p-2">{index === 0 ? "Вечер (20:00)" : ""}</td>
+              <td className="p-2 text-blue-700">{supplement}</td>
+              <td className="p-2 flex items-center gap-4">
+                {(() => {
+                  const today = new Date().toISOString().split("T")[0];
+                  const progress = selectedCourse.progress.find(
+                    (p) => p.supplement === supplement && p.date.includes(today)
+                  );
+                  return (
+                    <>
+                      {progress?.status === "TAKEN" ? (
+                        <FaCheck className="text-green-600" size={20} />
+                      ) : progress?.status === "SKIPPED" ? (
+                        <FaTimes className="text-red-600" size={20} />
+                      ) : (
+                        <>
+                          <button
+                            onClick={() =>
+                              handleMarkProgress(
+                                selectedCourse.id,
+                                supplement,
+                                today,
+                                "TAKEN"
+                              )
+                            }
+                            className="text-green-600 hover:text-green-800 transition-colors"
+                          >
+                            <FaCheck size={20} />
+                          </button>
+                          <button
+                            onClick={() =>
+                              handleMarkProgress(
+                                selectedCourse.id,
+                                supplement,
+                                today,
+                                "SKIPPED"
+                              )
+                            }
+                            className="text-red-600 hover:text-red-800 transition-colors"
+                          >
+                            <FaTimes size={20} />
+                          </button>
+                        </>
+                      )}
+                    </>
+                  );
+                })()}
+              </td>
+            </tr>
+          ))}
+        </>
+      )}
+    </tbody>
+  </table>
+</motion.div>
 
           {/* История настроения */}
           {selectedCourse &&
