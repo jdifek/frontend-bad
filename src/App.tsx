@@ -5,7 +5,7 @@ import { ToastContainer } from "react-toastify";
 import { useAuth } from "./helpers/context/AuthContext";
 
 export const App = () => {
-  const { login, isLoading } = useAuth();
+  const { login, isLoading, user } = useAuth();
 
   useEffect(() => {
     const tg = window.Telegram?.WebApp;
@@ -89,6 +89,27 @@ export const App = () => {
     return (
       <div className="min-h-screen bg-blue-50 flex items-center justify-center">
         Загрузка...
+      </div>
+    );
+  }
+
+  if (!user?.isAdmin && !user?.isPremium) {
+    return (
+      <div className="min-h-screen bg-blue-50 flex items-center justify-center">
+        <div className="text-center p-6">
+          <h1 className="text-2xl font-bold text-blue-900 mb-4">
+            Доступ ограничен
+          </h1>
+          <p className="text-gray-600 mb-6">
+            Чтобы получить доступ, приобретите ежовик на Wildberries.
+          </p>
+          <a
+            href="https://www.wildberries.ru/" // Замените на актуальную ссылку на продукт
+            className="inline-block p-3 bg-blue-600 text-white rounded-xl hover:bg-blue-700"
+          >
+            Купить ежовик
+          </a>
+        </div>
       </div>
     );
   }

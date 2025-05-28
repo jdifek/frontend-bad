@@ -13,6 +13,8 @@ export const Home = () => {
   const [courses, setCourses] = useState(false);
   const { user, isLoading: authLoading } = useAuth();
 
+  console.log(user?.isAdmin);
+
   const buttonVariants = {
     hover: {
       scale: 1.05,
@@ -33,7 +35,6 @@ export const Home = () => {
         console.log();
 
         setCourses(res.data.courses.length > 0);
-        
       } catch (error) {
         console.error("Error fetching courses:", error);
       }
@@ -116,6 +117,22 @@ export const Home = () => {
             <span className="font-medium">Обратная связь</span>
           </Link>
         </motion.div>
+
+        {user?.isAdmin && (
+          <motion.div
+            variants={buttonVariants}
+            whileHover="hover"
+            whileTap="tap"
+          >
+            <Link
+              to="/admin"
+              className="flex items-center justify-center w-full p-4 bg-white text-blue-900 rounded-xl shadow-md border border-gray-300 hover:border-blue-600"
+            >
+              <IoInformationCircle className="mr-3 text-xl text-blue-600" />
+              <span className="font-medium">Генерация QR</span>
+            </Link>
+          </motion.div>
+        )}
       </div>
 
       <AboutModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} />

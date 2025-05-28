@@ -5,6 +5,7 @@ import { AnalysisCourse } from './pages/AnalysisCourse'
 import { FoodAnalysis } from './pages/FoodAnalysis'
 import { MyCourse } from './pages/MyCourse'
 import { Feedback } from './pages/Feedback'
+import Admin from './pages/Admin'
 
 export const RoutesConfig = () => {
 	return (
@@ -15,6 +16,8 @@ export const RoutesConfig = () => {
 			<Route path='/food-analysis' element={<FoodAnalysis />} />
 			<Route path='/my-course' element={<MyCourse />} />
 			<Route path='/feedback' element={<Feedback />} />
+      <Route path="/admin" element={<Admin />} />
+
 		</Routes>
 	)
 }
