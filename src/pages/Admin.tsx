@@ -25,7 +25,7 @@ const Admin: React.FC = () => {
       toast.error('Доступ только для администраторов');
       navigate('/');
     }
-    // Cleanup download URL when component unmounts
+    // Очистка URL при размонтировании компонента
     return () => {
       if (downloadUrl) {
         window.URL.revokeObjectURL(downloadUrl);
@@ -59,10 +59,19 @@ const Admin: React.FC = () => {
       return;
     }
 
+    if (!user?.telegramId) {
+      toast.error('Telegram ID пользователя не найден');
+      return;
+    }
+
     setIsLoading(true);
-    setDownloadUrl(null); // Reset previous download URL
+    setDownloadUrl(null); // Сброс предыдущего URL
     try {
-      const response = await $api.post('/api/auth/bulk-qr', { count }, { responseType: 'blob' });
+      const response = await $api.post(
+        '/api/auth/bulk-qr',
+        { count, telegramId: user.telegramId },
+        { responseType: 'blob' }
+      );
       const url = window.URL.createObjectURL(new Blob([response.data]));
       setDownloadUrl(url);
       toast.success(`${count} QR-кодов успешно созданы`);
@@ -89,7 +98,7 @@ const Admin: React.FC = () => {
         Панель администратора
       </motion.h1>
       <div className="max-w-md mx-auto">
-        {/* Single QR Code Generation */}
+        {/* Создание одного QR-кода */}
         <div className="mb-6">
           <h2 className="text-xl font-semibold text-blue-900 mb-2">Создать один QR-код</h2>
           <div className="mb-4">
@@ -133,7 +142,7 @@ const Admin: React.FC = () => {
           )}
         </div>
 
-        {/* Bulk QR Code Generation */}
+        {/* Создание нескольких QR-кодов */}
         <div className="mb-6">
           <h2 className="text-xl font-semibold text-blue-900 mb-2">Создать несколько QR-кодов</h2>
           <div className="mb-4">
