@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { GoalSelector } from "../components/re-used/GoalSelector";
@@ -42,6 +43,7 @@ export const QuickCourse = () => {
   const { user, isLoading: authLoading } = useAuth();
   const [dietPreference, setDietPreference] = useState<string>("none");
   const navigate = useNavigate();
+
   useEffect(() => {
     const fetchCourses = async () => {
       console.log("fetchCourses called with:", { authLoading, user });
@@ -87,9 +89,7 @@ export const QuickCourse = () => {
     callback?: (recognizedSupplements: Supplement[]) => void
   ) => {
     if (authLoading || !user?.telegramId) {
-      setError(
-        "Пользователь не авторизован. Попробуйте перезагрузить приложение."
-      );
+      setError("Пользователь не авторизован.");
       return;
     }
 
@@ -118,10 +118,15 @@ export const QuickCourse = () => {
 
       setSupplements((prev) => [...prev, ...newSupplements]);
       callback?.(newSupplements);
-    } catch (error) {
+      toast.success("Добавка успешно добавлена!", {
+        position: "bottom-center",
+        theme: "light",
+        transition: Slide,
+      });
+    } catch (error: any) {
       console.error("Error adding supplement:", error);
       setError(
-        "Не удалось добавить добавку. Попробуйте снова или перезагрузите приложение."
+        `Не удалось добавить добавку: ${error.response?.data?.message || error.message}`
       );
     } finally {
       setIsAddingSupplement(false);
@@ -130,20 +135,30 @@ export const QuickCourse = () => {
 
   const handleRemoveSupplement = (supplementName: string) => {
     setSupplements(supplements.filter((s) => s.name !== supplementName));
+    toast.info("Добавка удалена.", {
+      position: "bottom-center",
+      theme: "light",
+      transition: Slide,
+    });
   };
 
   const handleGenerateCourse = async () => {
     if (authLoading || !user?.telegramId) {
-      setError(
-        "Пользователь не авторизован. Попробуйте перезагрузить приложение."
-      );
+      setError("Пользователь не авторизован.");
       return;
     }
 
     if (goals.length === 0) {
       setError("Выберите хотя бы одну цель.");
+      toast.error("Выберите хотя бы одну цель.", {
+        position: "bottom-center",
+        theme: "light",
+        transition: Slide,
+      });
       return;
     }
+
+    console.log("Generating course with:", { goals, supplements, dietPreference });
 
     try {
       setLoading(true);
@@ -172,18 +187,19 @@ export const QuickCourse = () => {
       toast.success("Курс успешно создан!", {
         position: "bottom-center",
         autoClose: 5000,
-        hideProgressBar: false,
-        closeOnClick: true,
-        pauseOnHover: true,
-        draggable: true,
         theme: "light",
         transition: Slide,
       });
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error generating course:", error);
       setError(
-        "Не удалось сгенерировать курс. Попробуйте снова или перезагрузите приложение."
+        `Не удалось сгенерировать курс: ${error.response?.data?.message || error.message}`
       );
+      toast.error("Не удалось сгенерировать курс.", {
+        position: "bottom-center",
+        theme: "light",
+        transition: Slide,
+      });
     } finally {
       setLoading(false);
     }
@@ -210,13 +226,17 @@ export const QuickCourse = () => {
       setCourse(null);
       setSupplements([]);
       setGoals([]);
+      setDietPreference("none"); // Сбрасываем предпочтения диеты
       toast.success("Курс успешно удалён!", {
         position: "bottom-center",
         theme: "light",
         transition: Slide,
       });
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error deleting course:", error);
+      setError(
+        `Не удалось удалить курс: ${error.response?.data?.message || error.message}`
+      );
       toast.error("Не удалось удалить курс.", {
         position: "bottom-center",
         theme: "light",
@@ -234,7 +254,7 @@ export const QuickCourse = () => {
   if (!user) {
     return (
       <div className="p-4 text-center text-red-700">
-        Ошибка авторизации. Попробуйте перезагрузить приложение или войти снова.
+        Ошибка авторизации. Попробуйте войти снова.
       </div>
     );
   }
@@ -261,7 +281,10 @@ export const QuickCourse = () => {
       <GoalSelector
         dietPreference={dietPreference}
         setDietPreference={setDietPreference}
-        onSelect={(g: string[]) => setGoals(g)}
+        onSelect={(g: string[]) => {
+          setGoals(g);
+          setError(null); // Сбрасываем ошибку при выборе цели
+        }}
       />
       <SupplementInput
         supplements={supplements}
@@ -278,14 +301,14 @@ export const QuickCourse = () => {
         {loading
           ? "Генерация..."
           : isAddingSupplement
-          ? "Идет анализ добавок..."
+          ? "Добавление добавки..."
           : "Сгенерировать курс"}
       </motion.button>
       {course && (
         <>
           <CourseTable course={course} />
           <motion.button
-            onClick={() => navigate('/my-course')}
+            onClick={() => navigate("/my-course")}
             className="bg-[#ffffff] text-black p-3 rounded-xl mt-4 w-full font-medium shadow-md"
             disabled={loading}
             whileHover={{
@@ -294,7 +317,7 @@ export const QuickCourse = () => {
             }}
             whileTap={{ scale: 0.97 }}
           >
-            {loading ? "Переход" : "Перейти в мой курс"}
+            {loading ? "Загрузка..." : "Перейти в мой курс"}
           </motion.button>
           <motion.button
             onClick={handleDeleteCourse}

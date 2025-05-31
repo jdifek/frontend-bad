@@ -27,10 +27,10 @@ interface Meal {
 }
 
 interface Meals {
-  Breakfast: Meal[];
-  Lunch: Meal[];
-  Snack: Meal[];
-  Dinner: Meal[];
+  Завтрак: Meal[];
+  Обед: Meal[];
+  Перекус: Meal[];
+  Ужин: Meal[];
 }
 
 export const FoodAnalysis = () => {
@@ -39,9 +39,7 @@ export const FoodAnalysis = () => {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
   const [showModal, setShowModal] = useState<boolean>(false);
-  const [selectedMealType, setSelectedMealType] = useState<keyof Meals | null>(
-    null
-  );
+  const [selectedMealType, setSelectedMealType] = useState<keyof Meals | null>(null);
   const [showManualInput, setShowManualInput] = useState<boolean>(false);
   const [manualInput, setManualInput] = useState({
     dish: "",
@@ -52,59 +50,53 @@ export const FoodAnalysis = () => {
 
   const [calorieGoal, setCalorieGoal] = useState<number>(user?.goal || 0);
   const [meals, setMeals] = useState<Meals>({
-    Breakfast: [],
-    Lunch: [],
-    Snack: [],
-    Dinner: [],
+    Завтрак: [],
+    Обед: [],
+    Перекус: [],
+    Ужин: [],
   });
   const [showCalendar, setShowCalendar] = useState<boolean>(false);
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
 
   // Форматирование даты в YYYY-MM-DD
   const getDateString = (date: Date) => {
-    const offsetDate = new Date(
-      date.getTime() - date.getTimezoneOffset() * 60000
-    );
+    const offsetDate = new Date(date.getTime() - date.getTimezoneOffset() * 60000);
     return offsetDate.toISOString().split("T")[0];
   };
 
-  // Загружаем начальные данные (цель калорий и еду) через API
+  // Загрузка начальных данных (цель калорий и еда)
   useEffect(() => {
     const fetchInitialData = async () => {
       if (authLoading || !user?.telegramId) return;
 
       try {
-        // Загружаем цель калорий
+        // Загрузка цели калорий
         const userResponse = await $api.get("/api/auth/me", {
           headers: {
             Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
           },
         });
-        console.log("User response from /api/auth/me:", userResponse.data);
         if (userResponse.data.user.goal) {
           setCalorieGoal(userResponse.data.user.goal);
         }
 
-        // Загружаем еду
-        interface ApiMeal {
-          id: number;
-          dish: string;
-          calories: number;
-          type?: string;
-          date: string;
-        }
-
-        const mealsResponse = await $api.get(
-          `/api/meals/user/${user.telegramId}/meals`
-        );
+        // Загрузка еды
+        const mealsResponse = await $api.get(`/api/meals/user/${user.telegramId}/meals`);
         const initialMeals: Meals = {
-          Breakfast: [],
-          Lunch: [],
-          Snack: [],
-          Dinner: [],
+          Завтрак: [],
+          Обед: [],
+          Перекус: [],
+          Ужин: [],
         };
-        mealsResponse.data.meals.forEach((meal: ApiMeal) => {
-          const mealType = (meal.type || "Breakfast") as keyof Meals;
+        mealsResponse.data.meals.forEach((meal: Meal) => {
+          // Маппинг английских типов на русские
+          const mealTypeMap: { [key: string]: keyof Meals } = {
+            Breakfast: "Завтрак",
+            Lunch: "Обед",
+            Snack: "Перекус",
+            Dinner: "Ужин",
+          };
+          const mealType = mealTypeMap[meal.type] || "Завтрак";
           initialMeals[mealType].push({
             id: meal.id,
             dish: meal.dish,
@@ -115,7 +107,7 @@ export const FoodAnalysis = () => {
         });
         setMeals(initialMeals);
       } catch (error) {
-        console.error("Error fetching initial data:", error);
+        console.error("Ошибка загрузки данных:", error);
         setError("Не удалось загрузить данные.");
       }
     };
@@ -123,7 +115,7 @@ export const FoodAnalysis = () => {
     fetchInitialData();
   }, [authLoading, user]);
 
-  // Обновляем цель калорий через API
+  // Обновление цели калорий
   const updateCalorieGoal = async (newGoal: number) => {
     if (authLoading || !user?.telegramId) {
       setError("Пользователь не авторизован.");
@@ -137,24 +129,15 @@ export const FoodAnalysis = () => {
         return;
       }
 
-      console.log(
-        "Updating calorie goal to:",
-        newGoal,
-        "for user:",
-        user.telegramId
-      );
-
-      const response = await $api.put(
+      await $api.put(
         `/api/meals/user/${user.telegramId}`,
-        { goal: newGoal }, // Убедимся, что данные отправляются в правильном формате
+        { goal: newGoal },
         {
           headers: {
             Authorization: `Bearer ${token}`,
           },
         }
       );
-
-      console.log("API response:", response.data);
       setCalorieGoal(newGoal);
       toast.success("Цель калорий обновлена!", {
         position: "bottom-center",
@@ -162,17 +145,11 @@ export const FoodAnalysis = () => {
         transition: Slide,
       });
     } catch (error: any) {
-      console.error(
-        "Error updating calorie goal:",
-        error.response?.data || error.message
-      );
-      setError(
-        `Не удалось обновить цель калорий: ${
-          error.response?.data?.message || error.message
-        }`
-      );
+      console.error("Ошибка обновления цели калорий:", error);
+      setError(`Не удалось обновить цель калорий: ${error.response?.data?.message || error.message}`);
     }
   };
+
   const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       const file = e.target.files[0];
@@ -205,12 +182,7 @@ export const FoodAnalysis = () => {
 
       const newAnalysis = res.data.foodAnalysis;
       setAnalysis(newAnalysis);
-      if (
-        selectedMealType &&
-        (["Breakfast", "Lunch", "Snack", "Dinner"] as const).includes(
-          selectedMealType
-        )
-      ) {
+      if (selectedMealType && (["Завтрак", "Обед", "Перекус", "Ужин"] as const).includes(selectedMealType)) {
         await addMeal(selectedMealType, newAnalysis);
       }
       setShowModal(false);
@@ -222,10 +194,8 @@ export const FoodAnalysis = () => {
         transition: Slide,
       });
     } catch (error) {
-      console.error("Error analyzing food:", error);
-      setError(
-        "Не удалось проанализировать еду. Попробуйте ввести данные вручную."
-      );
+      console.error("Ошибка анализа еды:", error);
+      setError("Не удалось проанализировать еду. Попробуйте ввести данные вручную.");
       setShowManualInput(true);
     } finally {
       setLoading(false);
@@ -250,18 +220,12 @@ export const FoodAnalysis = () => {
         telegramId: user.telegramId,
         dish: manualInput.dish,
         grams: parseFloat(manualInput.grams),
-        suggestions:
-          manualInput.suggestions || "Нет дополнительных рекомендаций.",
+        suggestions: manualInput.suggestions || "Нет дополнительных рекомендаций.",
       });
 
       const newAnalysis = res.data.foodAnalysis;
       setAnalysis(newAnalysis);
-      if (
-        selectedMealType &&
-        (["Breakfast", "Lunch", "Snack", "Dinner"] as const).includes(
-          selectedMealType
-        )
-      ) {
+      if (selectedMealType && (["Завтрак", "Обед", "Перекус", "Ужин"] as const).includes(selectedMealType)) {
         await addMeal(selectedMealType, newAnalysis);
       }
       setShowModal(false);
@@ -278,7 +242,7 @@ export const FoodAnalysis = () => {
         transition: Slide,
       });
     } catch (error) {
-      console.error("Error saving manual input:", error);
+      console.error("Ошибка сохранения ручного ввода:", error);
       setError("Не удалось сохранить ручной ввод. Попробуйте снова.");
     } finally {
       setLoading(false);
@@ -305,7 +269,7 @@ export const FoodAnalysis = () => {
         ],
       }));
     } catch (error) {
-      console.error("Error adding meal:", error);
+      console.error("Ошибка добавления еды:", error);
       setError("Не удалось добавить еду.");
     }
   };
@@ -323,7 +287,8 @@ export const FoodAnalysis = () => {
     0
   );
   const remaining = calorieGoal - totalConsumed;
-  // Функция для получения приёмов пищи за конкретную дату
+
+  // Получение еды за выбранную дату
   const getMealsForDate = (date: Date) => {
     const dateString = getDateString(date);
     const mealsForDate: Meal[] = [];
@@ -379,11 +344,7 @@ export const FoodAnalysis = () => {
             >
               <div className="flex items-center justify-center mb-4 bg-gray-100 p-2 rounded-lg">
                 <button
-                  onClick={() =>
-                    setSelectedDate(
-                      (prev) => new Date(prev.setDate(prev.getDate() - 1))
-                    )
-                  }
+                  onClick={() => setSelectedDate((prev) => new Date(prev.setDate(prev.getDate() - 1)))}
                   className="text-blue-600 hover:text-blue-800 p-1 transition-colors"
                 >
                   ←
@@ -419,11 +380,7 @@ export const FoodAnalysis = () => {
                       })}
                 </span>
                 <button
-                  onClick={() =>
-                    setSelectedDate(
-                      (prev) => new Date(prev.setDate(prev.getDate() + 1))
-                    )
-                  }
+                  onClick={() => setSelectedDate((prev) => new Date(prev.setDate(prev.getDate() + 1)))}
                   className="text-blue-600 hover:text-blue-800 p-1 transition-colors"
                 >
                   →
@@ -433,20 +390,15 @@ export const FoodAnalysis = () => {
                 onChange={(value) => {
                   if (value instanceof Date) {
                     setSelectedDate(value);
-                  } else if (
-                    Array.isArray(value) &&
-                    value.length > 0 &&
-                    value[0] instanceof Date
-                  ) {
-                    setSelectedDate(value[0]); // Для диапазона берём первую дату
+                  } else if (Array.isArray(value) && value.length > 0 && value[0] instanceof Date) {
+                    setSelectedDate(value[0]);
                   }
                 }}
                 value={selectedDate}
                 className="w-full mb-4 mx-auto rounded-lg border border-blue-200"
                 tileClassName={({ date }) => {
                   const mealsForDate = getMealsForDate(date);
-                  const isToday =
-                    date.toDateString() === new Date().toDateString();
+                  const isToday = date.toDateString() === new Date().toDateString();
                   return [
                     mealsForDate.length > 0 && "bg-green-100",
                     isToday && "bg-blue-100 text-blue-900 font-semibold",
@@ -474,16 +426,14 @@ export const FoodAnalysis = () => {
                     {getMealsForDate(selectedDate).map((meal, index) => (
                       <li key={index} className="py-1 flex justify-between">
                         <span>
-                          {meal.type || "Без типа"}: {meal.dish}
+                          {meal.type}: {meal.dish}
                         </span>
                         <span>{meal.calories} ккал</span>
                       </li>
                     ))}
                   </ul>
                 ) : (
-                  <p className="text-sm text-blue-700">
-                    Нет данных за этот день.
-                  </p>
+                  <p className="text-sm text-blue-700">Нет данных за этот день.</p>
                 )}
               </div>
             </motion.div>
@@ -500,16 +450,14 @@ export const FoodAnalysis = () => {
         </motion.div>
       )}
 
-      {/* Calorie Progress Section */}
+      {/* Прогресс калорий */}
       <motion.div
         className="bg-white rounded-xl p-4 mb-6 shadow-sm border border-gray-300"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
       >
         <div className="flex justify-between items-center mb-3">
-          <h2 className="text-lg font-semibold text-gray-800">
-            Прогресс калорий
-          </h2>
+          <h2 className="text-lg font-semibold text-gray-800">Прогресс калорий</h2>
         </div>
         <div className="flex justify-between items-center text-lg font-bold text-gray-800">
           <input
@@ -522,9 +470,7 @@ export const FoodAnalysis = () => {
           <span className="text-gray-500">-</span>
           <span>{totalConsumed}</span>
           <span className="text-gray-500">=</span>
-          <span className={remaining >= 0 ? "text-orange-600" : "text-red-600"}>
-            {remaining}
-          </span>
+          <span className={remaining >= 0 ? "text-orange-600" : "text-red-600"}>{remaining}</span>
         </div>
         <div className="flex justify-between text-xs text-gray-500 mt-2">
           <span>Цель</span>
@@ -533,20 +479,15 @@ export const FoodAnalysis = () => {
         </div>
       </motion.div>
 
-      {/* Meal Sections */}
-      {(["Breakfast", "Lunch", "Snack", "Dinner"] as const).map((mealType) => {
-        // Filter meals for the selected date
+      {/* Секции приёмов пищи */}
+      {(["Завтрак", "Обед", "Перекус", "Ужин"] as const).map((mealType) => {
         const mealsForSelectedDate = meals[mealType].filter((meal) => {
           const mealDate = meal.date.split("T")[0];
           const selectedDateString = getDateString(selectedDate);
           return mealDate === selectedDateString;
         });
 
-        // Calculate total calories for the filtered meals
-        const totalCalories = mealsForSelectedDate.reduce(
-          (sum, meal) => sum + meal.calories,
-          0
-        );
+        const totalCalories = mealsForSelectedDate.reduce((sum, meal) => sum + meal.calories, 0);
 
         return (
           <motion.div
@@ -557,7 +498,7 @@ export const FoodAnalysis = () => {
           >
             <div className="flex justify-between items-center">
               <h2 className="text-lg font-semibold text-blue-900">
-                {mealType} ({totalCalories} calories)
+                {mealType} ({totalCalories} ккал)
               </h2>
               <motion.button
                 onClick={() => {
@@ -568,27 +509,24 @@ export const FoodAnalysis = () => {
                 whileHover={{ scale: 1.1 }}
                 whileTap={{ scale: 0.9 }}
               >
-                <IoAdd size={16} className="mr-1" /> Add Meal
+                <IoAdd size={16} className="mr-1" /> Добавить блюдо
               </motion.button>
             </div>
             {mealsForSelectedDate.length > 0 ? (
               mealsForSelectedDate.map((meal) => (
-                <div
-                  key={meal.id}
-                  className="flex justify-between items-center mt-2"
-                >
+                <div key={meal.id} className="flex justify-between items-center mt-2">
                   <span>{meal.dish}</span>
-                  <span>{meal.calories} calories</span>
+                  <span>{meal.calories} ккал</span>
                 </div>
               ))
             ) : (
-              <p className="text-gray-500 text-sm mt-2">Nothing logged yet.</p>
+              <p className="text-gray-500 text-sm mt-2">Ещё ничего не добавлено.</p>
             )}
           </motion.div>
         );
       })}
 
-      {/* Modal for Analysis Type Selection */}
+      {/* Модальное окно для выбора типа анализа */}
       {showModal && (
         <motion.div
           className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4"
@@ -596,9 +534,7 @@ export const FoodAnalysis = () => {
           animate={{ opacity: 1 }}
         >
           <div className="bg-white p-6 rounded-xl max-w-md w-full">
-            <h2 className="text-lg font-medium text-blue-900 mb-4">
-              Добавить еду
-            </h2>
+            <h2 className="text-lg font-medium text-blue-900 mb-4">Добавить блюдо</h2>
             <motion.button
               onClick={() => setShowManualInput(true)}
               className="bg-blue-200 text-gray-700 p-3 rounded-lg w-full mb-4 font-medium flex items-center justify-center"
@@ -608,9 +544,7 @@ export const FoodAnalysis = () => {
               <IoPencil size={20} className="mr-2" /> Ввести данные вручную
             </motion.button>
             <div className="mb-4">
-              <h2 className="text-lg font-semibold text-blue-900 mb-3">
-                Загрузите фото еды:
-              </h2>
+              <h2 className="text-lg font-semibold text-blue-900 mb-3">Загрузите фото еды:</h2>
               <label className="block">
                 <input
                   type="file"
@@ -665,7 +599,7 @@ export const FoodAnalysis = () => {
         </motion.div>
       )}
 
-      {/* Manual Input Form */}
+      {/* Форма ручного ввода */}
       {showManualInput && showModal && (
         <motion.div
           className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4"
@@ -673,37 +607,30 @@ export const FoodAnalysis = () => {
           animate={{ opacity: 1 }}
         >
           <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-300">
-            <h3 className="text-lg font-semibold text-blue-900 mb-3">
-              Ручной ввод
-            </h3>
+            <h3 className="text-lg font-semibold text-blue-900 mb-3">Ручной ввод</h3>
             <input
               type="text"
               placeholder="Название блюда"
               value={manualInput.dish}
-              onChange={(e) =>
-                setManualInput({ ...manualInput, dish: e.target.value })
-              }
+              onChange={(e) => setManualInput({ ...manualInput, dish: e.target.value })}
               className="w-full p-2 mb-2 border rounded-lg"
             />
             <input
               type="number"
               placeholder="Вес (г)"
               value={manualInput.grams}
-              onChange={(e) =>
-                setManualInput({ ...manualInput, grams: e.target.value })
-              }
+              onChange={(e) => setManualInput({ ...manualInput, grams: e.target.value })}
               className="w-full p-2 mb-2 border rounded-lg"
             />
             <div className="flex gap-2">
               <motion.button
                 onClick={handleManualInputSubmit}
                 className="bg-green-200 text-gray-700 p-2 rounded-lg flex-1"
-                disabled={loading} // Disable button when loading
-                whileHover={{ scale: loading ? 1 : 1.03 }} // Prevent hover animation when disabled
-                whileTap={{ scale: loading ? 1 : 0.97 }} // Prevent tap animation when disabled
+                disabled={loading}
+                whileHover={{ scale: loading ? 1 : 1.03 }}
+                whileTap={{ scale: loading ? 1 : 0.97 }}
               >
-                {loading ? "Анализ..." : "Сохранить"}{" "}
-                {/* Change text based on loading state */}
+                {loading ? "Анализ..." : "Сохранить"}
               </motion.button>
               <motion.button
                 onClick={() => {
@@ -711,7 +638,7 @@ export const FoodAnalysis = () => {
                   setShowModal(true);
                 }}
                 className="bg-red-200 text-gray-700 p-2 rounded-lg flex-1"
-                disabled={loading} // Optionally disable Cancel button during loading
+                disabled={loading}
                 whileHover={{ scale: loading ? 1 : 1.03 }}
                 whileTap={{ scale: loading ? 1 : 0.97 }}
               >
