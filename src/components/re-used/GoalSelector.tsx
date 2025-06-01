@@ -18,11 +18,18 @@ const defaultGoals = [
 type GoalSelectorProps = {
   onSelect: (goals: string[]) => void;
   dietPreference: string;
+  selectedGoals: string[];
+  setSelectedGoals: React.Dispatch<React.SetStateAction<string[]>>;
   setDietPreference: React.Dispatch<React.SetStateAction<string>>;
 };
 
-export const GoalSelector = ({ dietPreference, onSelect, setDietPreference }: GoalSelectorProps) => {
-  const [selectedGoals, setSelectedGoals] = useState<string[]>([]);
+export const GoalSelector = ({
+  setSelectedGoals,
+  dietPreference,
+  selectedGoals,
+  onSelect,
+  setDietPreference,
+}: GoalSelectorProps) => {
   const [customGoal, setCustomGoal] = useState<string>("");
   const [customGoals, setCustomGoals] = useState<string[]>([]);
   const { user, isLoading: authLoading } = useAuth();
@@ -138,31 +145,31 @@ export const GoalSelector = ({ dietPreference, onSelect, setDietPreference }: Go
       </h2>
 
       <div className="grid grid-cols-2 gap-3">
-  {allGoals.map((goal) => (
-    <motion.button
-      key={goal}
-      className={`p-3 text-sm rounded-xl border ${
-        isGoalSelected(goal)
-          ? "bg-blue-600 text-white border-blue-600"
-          : goal === "Своя цель" && isCustomGoalActive
-          ? "bg-yellow-500 text-white border-yellow-500 hover:bg-yellow-600"
-          : customGoals.includes(goal)
-          ? "bg-green-500 text-white border-green-500 hover:bg-green-600"
-          : goal === "Своя цель"
-          ? "bg-yellow-300 text-blue-900 border-gray-300 hover:bg-yellow-400"
-          : "bg-white text-blue-900 border-gray-300 hover:border-blue-600"
-      } transition-all shadow-sm`}
-      onClick={() => handleSelect(goal)}
-      whileHover={{ scale: 1.03 }}
-      whileTap={{ scale: 0.97 }}
-      initial={{ opacity: 0, scale: 0.8 }}
-      animate={{ opacity: 1, scale: 1 }}
-      transition={{ duration: 0.3 }}
-    >
-      {goal}
-    </motion.button>
-  ))}
-</div>
+        {allGoals.map((goal) => (
+          <motion.button
+            key={goal}
+            className={`p-3 text-sm rounded-xl border ${
+              isGoalSelected(goal)
+                ? "bg-blue-600 text-white border-blue-600"
+                : goal === "Своя цель" && isCustomGoalActive
+                ? "bg-yellow-500 text-white border-yellow-500 hover:bg-yellow-600"
+                : customGoals.includes(goal)
+                ? "bg-green-500 text-white border-green-500 hover:bg-green-600"
+                : goal === "Своя цель"
+                ? "bg-yellow-300 text-blue-900 border-gray-300 hover:bg-yellow-400"
+                : "bg-white text-blue-900 border-gray-300 hover:border-blue-600"
+            } transition-all shadow-sm`}
+            onClick={() => handleSelect(goal)}
+            whileHover={{ scale: 1.03 }}
+            whileTap={{ scale: 0.97 }}
+            initial={{ opacity: 0, scale: 0.8 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.3 }}
+          >
+            {goal}
+          </motion.button>
+        ))}
+      </div>
 
       {isCustomGoalActive && (
         <div className="mt-4">

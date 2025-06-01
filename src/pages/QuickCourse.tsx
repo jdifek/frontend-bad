@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
@@ -31,10 +32,12 @@ type Course = {
   repeatAnalysis: string;
   questions: string[];
   disclaimer: string;
+  compatibilityNotes: string;
 };
 
 export const QuickCourse = () => {
   const [goals, setGoals] = useState<string[]>([]);
+  const [selectedGoals, setSelectedGoals] = useState<string[]>([]);
   const [isAddingSupplement, setIsAddingSupplement] = useState<boolean>(false);
   const [supplements, setSupplements] = useState<Supplement[]>([]);
   const [course, setCourse] = useState<Course | null>(null);
@@ -126,7 +129,9 @@ export const QuickCourse = () => {
     } catch (error: any) {
       console.error("Error adding supplement:", error);
       setError(
-        `Не удалось добавить добавку: ${error.response?.data?.message || error.message}`
+        `Не удалось добавить добавку: ${
+          error.response?.data?.message || error.message
+        }`
       );
     } finally {
       setIsAddingSupplement(false);
@@ -158,7 +163,11 @@ export const QuickCourse = () => {
       return;
     }
 
-    console.log("Generating course with:", { goals, supplements, dietPreference });
+    console.log("Generating course with:", {
+      goals,
+      supplements,
+      dietPreference,
+    });
 
     try {
       setLoading(true);
@@ -183,6 +192,8 @@ export const QuickCourse = () => {
           "Персонализированные рекомендации ИИ-нутрициолога на основе открытых исследований и общих принципов. Не является медицинской услугой или диагнозом",
         repeatAnalysis: response.data.repeatAnalysis || "",
         duration: response.data.course.duration || 30,
+        compatibilityNotes: response.data.compatibilityNotes
+        
       });
       toast.success("Курс успешно создан!", {
         position: "bottom-center",
@@ -193,7 +204,9 @@ export const QuickCourse = () => {
     } catch (error: any) {
       console.error("Error generating course:", error);
       setError(
-        `Не удалось сгенерировать курс: ${error.response?.data?.message || error.message}`
+        `Не удалось сгенерировать курс: ${
+          error.response?.data?.message || error.message
+        }`
       );
       toast.error("Не удалось сгенерировать курс.", {
         position: "bottom-center",
@@ -205,6 +218,61 @@ export const QuickCourse = () => {
     }
   };
 
+  const handleUpCourse = async (id: string) => {
+    if (authLoading || !user?.telegramId) {
+      setError("Пользователь не авторизован.");
+      return;
+    }
+  
+    try {
+      setLoading(true);
+      const response = await $api.post("/api/my-course/up", {
+        id,
+        courseOld: course,
+        telegramId: user.telegramId,
+      });
+  
+      const updatedCourse = response.data;
+  
+      if (!updatedCourse || !updatedCourse.supplements) {
+        throw new Error("Некорректный ответ от сервера.");
+      }
+  
+      setCourse({
+        ...updatedCourse,
+        supplements: updatedCourse.supplements || [],
+        suggestions:
+          updatedCourse.suggestions ||
+          "Следуйте расписанию для достижения цели.",
+        warnings:
+          updatedCourse.warnings || "Проконсультируйтесь с врачом.",
+        questions: updatedCourse.questions || [],
+        disclaimer:
+          updatedCourse.disclaimer ||
+          "Персонализированные рекомендации ИИ-нутрициолога на основе открытых исследований и общих принципов. Не является медицинской услугой или диагнозом",
+        repeatAnalysis: updatedCourse.repeatAnalysis || "",
+        duration: updatedCourse.duration || 30,
+      });
+  
+      toast.success("Курс успешно обновлен!", {
+        position: "bottom-center",
+        autoClose: 5000,
+        theme: "light",
+        transition: Slide,
+      });
+    } catch (e: any) {
+      console.error("Error updating course:", e);
+      toast.error("Не удалось обновить курс.", {
+        position: "bottom-center",
+        theme: "light",
+        transition: Slide,
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+  
+  
   const handleDeleteCourse = async () => {
     if (!course) {
       toast.error("Курс не выбран для удаления.", {
@@ -226,6 +294,7 @@ export const QuickCourse = () => {
       setCourse(null);
       setSupplements([]);
       setGoals([]);
+      setSelectedGoals([]);
       setDietPreference("none"); // Сбрасываем предпочтения диеты
       toast.success("Курс успешно удалён!", {
         position: "bottom-center",
@@ -235,7 +304,9 @@ export const QuickCourse = () => {
     } catch (error: any) {
       console.error("Error deleting course:", error);
       setError(
-        `Не удалось удалить курс: ${error.response?.data?.message || error.message}`
+        `Не удалось удалить курс: ${
+          error.response?.data?.message || error.message
+        }`
       );
       toast.error("Не удалось удалить курс.", {
         position: "bottom-center",
@@ -281,6 +352,8 @@ export const QuickCourse = () => {
       <GoalSelector
         dietPreference={dietPreference}
         setDietPreference={setDietPreference}
+        setSelectedGoals={setSelectedGoals}
+        selectedGoals={selectedGoals}
         onSelect={(g: string[]) => {
           setGoals(g);
           setError(null); // Сбрасываем ошибку при выборе цели
@@ -307,6 +380,18 @@ export const QuickCourse = () => {
       {course && (
         <>
           <CourseTable course={course} />
+          <motion.button
+            onClick={() => handleUpCourse(course.id)}
+            className="bg-[#ffffff] text-black p-3 rounded-xl mt-4 w-full font-medium shadow-md"
+            disabled={loading}
+            whileHover={{
+              scale: 1.03,
+              boxShadow: "0 8px 16px rgba(0,0,0,0.08)",
+            }}
+            whileTap={{ scale: 0.97 }}
+          >
+            {loading ? "Загрузка..." : "Усилить курс"}
+          </motion.button>
           <motion.button
             onClick={() => navigate("/my-course")}
             className="bg-[#ffffff] text-black p-3 rounded-xl mt-4 w-full font-medium shadow-md"

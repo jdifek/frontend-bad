@@ -1,6 +1,7 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { IoCamera, IoPencil, IoAdd } from "react-icons/io5";
+import { IoCamera, IoPencil, IoAdd, IoTrash } from "react-icons/io5";
 import { FaCalendarAlt } from "react-icons/fa";
 import Calendar from "react-calendar";
 import "react-calendar/dist/Calendar.css";
@@ -16,16 +17,18 @@ type Analysis = {
   suggestions: string;
   questions: string[];
   warnings: string;
+  type?: string; // Добавляем необязательное поле типа
+
 };
 
 interface Meal {
-  id: number;
+  id: string; // Изменяем на string, так как в ответе с сервера id - строка
   dish: string;
   calories: number;
-  type: string;
+  type: string | null; // Добавляем null, так как некоторые записи могут не иметь типа
   date: string;
+  photoUrl?: string; // Добавляем опциональное поле
 }
-
 interface Meals {
   Завтрак: Meal[];
   Обед: Meal[];
@@ -39,13 +42,18 @@ export const FoodAnalysis = () => {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
   const [showModal, setShowModal] = useState<boolean>(false);
-  const [selectedMealType, setSelectedMealType] = useState<keyof Meals | null>(null);
+  const [selectedMealType, setSelectedMealType] = useState<keyof Meals | null>(
+    null
+  );
   const [showManualInput, setShowManualInput] = useState<boolean>(false);
   const [manualInput, setManualInput] = useState({
     dish: "",
     grams: "",
     suggestions: "",
   });
+  const [burnedCalories, setBurnedCalories] = useState<number>(0);
+  const [showBurnedModal, setShowBurnedModal] = useState(false);
+  const [burnedInput, setBurnedInput] = useState("");
   const { user, isLoading: authLoading } = useAuth();
 
   const [calorieGoal, setCalorieGoal] = useState<number>(user?.goal || 0);
@@ -60,15 +68,46 @@ export const FoodAnalysis = () => {
 
   // Форматирование даты в YYYY-MM-DD
   const getDateString = (date: Date) => {
-    const offsetDate = new Date(date.getTime() - date.getTimezoneOffset() * 60000);
+    const offsetDate = new Date(
+      date.getTime() - date.getTimezoneOffset() * 60000
+    );
     return offsetDate.toISOString().split("T")[0];
+  };
+  const handleDeleteMeal = async (mealId: string, mealType: keyof Meals) => {
+    if (!user?.telegramId) return;
+
+    try {
+      // Удаляем блюдо с сервера
+      await $api.delete(`/api/meals/${mealId}`);
+
+      // Обновляем локальное состояние
+      setMeals(prev => ({
+        ...prev,
+        [mealType]: prev[mealType].filter(meal => meal.id !== mealId)
+      }));
+
+      toast.success("Блюдо удалено!", {
+        position: "bottom-center",
+        autoClose: 3000,
+        theme: "light",
+        transition: Slide,
+      });
+    } catch (error) {
+      console.error("Ошибка удаления блюда:", error);
+      toast.error("Не удалось удалить блюдо", {
+        position: "bottom-center",
+        autoClose: 3000,
+        theme: "light",
+        transition: Slide,
+      });
+    }
   };
 
   // Загрузка начальных данных (цель калорий и еда)
   useEffect(() => {
     const fetchInitialData = async () => {
       if (authLoading || !user?.telegramId) return;
-
+  
       try {
         // Загрузка цели калорий
         const userResponse = await $api.get("/api/auth/me", {
@@ -79,41 +118,51 @@ export const FoodAnalysis = () => {
         if (userResponse.data.user.goal) {
           setCalorieGoal(userResponse.data.user.goal);
         }
-
+  
         // Загрузка еды
-        const mealsResponse = await $api.get(`/api/meals/user/${user.telegramId}/meals`);
+        const mealsResponse = await $api.get(
+          `/api/meals/user/${user.telegramId}/meals`
+        );
+        
+        // Инициализируем структуру для хранения блюд по типам
         const initialMeals: Meals = {
           Завтрак: [],
           Обед: [],
           Перекус: [],
           Ужин: [],
         };
+  
+        // Распределяем блюда по типам
         mealsResponse.data.meals.forEach((meal: Meal) => {
-          // Маппинг английских типов на русские
-          const mealTypeMap: { [key: string]: keyof Meals } = {
-            Breakfast: "Завтрак",
-            Lunch: "Обед",
-            Snack: "Перекус",
-            Dinner: "Ужин",
-          };
-          const mealType = mealTypeMap[meal.type] || "Завтрак";
+          // Определяем тип приёма пищи
+          let mealType: keyof Meals = "Завтрак"; // Значение по умолчанию
+          
+          if (meal.type === "Обед") mealType = "Обед";
+          else if (meal.type === "Перекус") mealType = "Перекус";
+          else if (meal.type === "Ужин") mealType = "Ужин";
+          // Если тип null или undefined, оставляем "Завтрак" по умолчанию
+  
+          // Добавляем блюдо в соответствующий раздел
           initialMeals[mealType].push({
             id: meal.id,
             dish: meal.dish,
             calories: meal.calories,
             type: mealType,
             date: meal.date,
+            photoUrl: meal.photoUrl // Сохраняем URL фото
           });
         });
+  
         setMeals(initialMeals);
       } catch (error) {
         console.error("Ошибка загрузки данных:", error);
         setError("Не удалось загрузить данные.");
       }
     };
-
+  
     fetchInitialData();
-  }, [authLoading, user]);
+    fetchBurnedCalories();
+  }, [authLoading, user, selectedDate]);
 
   // Обновление цели калорий
   const updateCalorieGoal = async (newGoal: number) => {
@@ -146,7 +195,11 @@ export const FoodAnalysis = () => {
       });
     } catch (error: any) {
       console.error("Ошибка обновления цели калорий:", error);
-      setError(`Не удалось обновить цель калорий: ${error.response?.data?.message || error.message}`);
+      setError(
+        `Не удалось обновить цель калорий: ${
+          error.response?.data?.message || error.message
+        }`
+      );
     }
   };
 
@@ -167,24 +220,29 @@ export const FoodAnalysis = () => {
       setError("Пожалуйста, загрузите фото еды.");
       return;
     }
-
+    if (!selectedMealType) {
+      setError("Пожалуйста, выберите тип приёма пищи.");
+      return;
+    }
+  
     try {
       setLoading(true);
       setError(null);
-
+  
       const formData = new FormData();
       formData.append("telegramId", user.telegramId);
       formData.append("photo", photo);
-
+      // Добавляем тип приёма пищи
+      formData.append("type", selectedMealType);
+      
+  
       const res = await $api.post("/api/food-analysis/photo", formData, {
         headers: { "Content-Type": "multipart/form-data" },
       });
-
+  
       const newAnalysis = res.data.foodAnalysis;
       setAnalysis(newAnalysis);
-      if (selectedMealType && (["Завтрак", "Обед", "Перекус", "Ужин"] as const).includes(selectedMealType)) {
-        await addMeal(selectedMealType, newAnalysis);
-      }
+      await addMeal(selectedMealType, newAnalysis);
       setShowModal(false);
       setPhoto(null);
       toast.success("Анализ еды завершён!", {
@@ -195,7 +253,9 @@ export const FoodAnalysis = () => {
       });
     } catch (error) {
       console.error("Ошибка анализа еды:", error);
-      setError("Не удалось проанализировать еду. Попробуйте ввести данные вручную.");
+      setError(
+        "Не удалось проанализировать еду. Попробуйте ввести данные вручную."
+      );
       setShowManualInput(true);
     } finally {
       setLoading(false);
@@ -211,23 +271,26 @@ export const FoodAnalysis = () => {
       setError("Заполните название блюда и вес.");
       return;
     }
-
+    if (!selectedMealType) {
+      setError("Пожалуйста, выберите тип приёма пищи.");
+      return;
+    }
+  
     try {
       setLoading(true);
       setError(null);
-
+  
       const res = await $api.post("/api/food-analysis/manual", {
         telegramId: user.telegramId,
         dish: manualInput.dish,
         grams: parseFloat(manualInput.grams),
         suggestions: manualInput.suggestions || "Нет дополнительных рекомендаций.",
+        type: selectedMealType, // Добавляем тип приёма пищи
       });
-
+  
       const newAnalysis = res.data.foodAnalysis;
       setAnalysis(newAnalysis);
-      if (selectedMealType && (["Завтрак", "Обед", "Перекус", "Ужин"] as const).includes(selectedMealType)) {
-        await addMeal(selectedMealType, newAnalysis);
-      }
+      await addMeal(selectedMealType, newAnalysis);
       setShowModal(false);
       setShowManualInput(false);
       setManualInput({
@@ -248,26 +311,34 @@ export const FoodAnalysis = () => {
       setLoading(false);
     }
   };
-
   const addMeal = async (mealType: keyof Meals, analysis: Analysis) => {
     if (!user?.telegramId) return;
-
+  
     try {
       const mealDate = new Date().toISOString();
-
+  
       setMeals((prev) => ({
         ...prev,
         [mealType]: [
           ...prev[mealType],
           {
-            id: Date.now(),
+            id: Date.now().toString(), // Делаем строкой для консистентности
             dish: analysis.dish,
             calories: analysis.calories,
-            type: mealType,
+            type: mealType, // Сохраняем выбранный тип
             date: mealDate,
           },
         ],
       }));
+  
+      // Отправляем данные на сервер
+      await $api.post("/api/meals", {
+        telegramId: user.telegramId,
+        dish: analysis.dish,
+        calories: analysis.calories,
+        type: mealType, // Отправляем тип на сервер
+        date: mealDate,
+      });
     } catch (error) {
       console.error("Ошибка добавления еды:", error);
       setError("Не удалось добавить еду.");
@@ -286,8 +357,44 @@ export const FoodAnalysis = () => {
         .reduce((acc: number, meal: Meal) => acc + meal.calories, 0),
     0
   );
-  const remaining = calorieGoal - totalConsumed;
+  const fetchBurnedCalories = async () => {
+    if (!user?.telegramId) return;
 
+    try {
+      const response = await $api.get(
+        `/api/user/${user.telegramId}/calories-burned/${getDateString(
+          selectedDate
+        )}`
+      );
+      setBurnedCalories(response.data.burned.calories || 0);
+    } catch (error) {
+      console.error("Error fetching burned calories:", error);
+    }
+  };
+
+  // Функция для сохранения потраченных калорий
+  const saveBurnedCalories = async () => {
+    if (!user?.telegramId || !burnedInput) return;
+
+    try {
+      const calories = parseInt(burnedInput);
+      await $api.post("/api/calories-burned", {
+        telegramId: user.telegramId,
+        calories,
+        date: selectedDate.toISOString(),
+      });
+      setBurnedCalories(calories);
+      setShowBurnedModal(false);
+      setBurnedInput("");
+      toast.success("Потраченные калории сохранены!");
+    } catch (error) {
+      console.error("Error saving burned calories:", error);
+      toast.error("Не удалось сохранить данные");
+    }
+  };
+
+  // Обновляем формулу расчета
+  const remaining = calorieGoal + burnedCalories - totalConsumed;
   // Получение еды за выбранную дату
   const getMealsForDate = (date: Date) => {
     const dateString = getDateString(date);
@@ -344,7 +451,11 @@ export const FoodAnalysis = () => {
             >
               <div className="flex items-center justify-center mb-4 bg-gray-100 p-2 rounded-lg">
                 <button
-                  onClick={() => setSelectedDate((prev) => new Date(prev.setDate(prev.getDate() - 1)))}
+                  onClick={() =>
+                    setSelectedDate(
+                      (prev) => new Date(prev.setDate(prev.getDate() - 1))
+                    )
+                  }
                   className="text-blue-600 hover:text-blue-800 p-1 transition-colors"
                 >
                   ←
@@ -380,7 +491,11 @@ export const FoodAnalysis = () => {
                       })}
                 </span>
                 <button
-                  onClick={() => setSelectedDate((prev) => new Date(prev.setDate(prev.getDate() + 1)))}
+                  onClick={() =>
+                    setSelectedDate(
+                      (prev) => new Date(prev.setDate(prev.getDate() + 1))
+                    )
+                  }
                   className="text-blue-600 hover:text-blue-800 p-1 transition-colors"
                 >
                   →
@@ -390,7 +505,11 @@ export const FoodAnalysis = () => {
                 onChange={(value) => {
                   if (value instanceof Date) {
                     setSelectedDate(value);
-                  } else if (Array.isArray(value) && value.length > 0 && value[0] instanceof Date) {
+                  } else if (
+                    Array.isArray(value) &&
+                    value.length > 0 &&
+                    value[0] instanceof Date
+                  ) {
                     setSelectedDate(value[0]);
                   }
                 }}
@@ -398,7 +517,8 @@ export const FoodAnalysis = () => {
                 className="w-full mb-4 mx-auto rounded-lg border border-blue-200"
                 tileClassName={({ date }) => {
                   const mealsForDate = getMealsForDate(date);
-                  const isToday = date.toDateString() === new Date().toDateString();
+                  const isToday =
+                    date.toDateString() === new Date().toDateString();
                   return [
                     mealsForDate.length > 0 && "bg-green-100",
                     isToday && "bg-blue-100 text-blue-900 font-semibold",
@@ -433,7 +553,9 @@ export const FoodAnalysis = () => {
                     ))}
                   </ul>
                 ) : (
-                  <p className="text-sm text-blue-700">Нет данных за этот день.</p>
+                  <p className="text-sm text-blue-700">
+                    Нет данных за этот день.
+                  </p>
                 )}
               </div>
             </motion.div>
@@ -449,6 +571,67 @@ export const FoodAnalysis = () => {
           {error}
         </motion.div>
       )}
+      {/* Секция потраченных калорий */}
+<motion.div
+  className="bg-white rounded-xl p-4 mb-6 shadow-sm border border-gray-300"
+  initial={{ opacity: 0 }}
+  animate={{ opacity: 1 }}
+>
+  <div className="flex justify-between items-center mb-2">
+    <h2 className="text-lg font-semibold text-gray-800">Потрачено калорий</h2>
+    <motion.button
+      onClick={() => setShowBurnedModal(true)}
+      className="text-blue-600 text-sm flex items-center"
+      whileHover={{ scale: 1.1 }}
+      whileTap={{ scale: 0.9 }}
+    >
+      <IoPencil size={16} className="mr-1" /> Изменить
+    </motion.button>
+  </div>
+  <div className="text-2xl font-bold text-blue-900">
+    {burnedCalories} ккал
+  </div>
+</motion.div>
+
+{/* Модальное окно для ввода потраченных калорий */}
+{showBurnedModal && (
+  <motion.div
+    className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4"
+    initial={{ opacity: 0 }}
+    animate={{ opacity: 1 }}
+  >
+    <div className="bg-white p-6 rounded-xl max-w-md w-full">
+      <h2 className="text-lg font-medium text-blue-900 mb-4">
+        Потраченные калории за {selectedDate.toLocaleDateString('ru-RU')}
+      </h2>
+      <input
+        type="number"
+        value={burnedInput}
+        onChange={(e) => setBurnedInput(e.target.value)}
+        placeholder="Введите количество калорий"
+        className="w-full p-3 border rounded-lg mb-4"
+      />
+      <div className="flex gap-2">
+        <motion.button
+          onClick={saveBurnedCalories}
+          className="bg-blue-200 text-gray-700 p-3 rounded-lg flex-1 font-medium"
+          whileHover={{ scale: 1.03 }}
+          whileTap={{ scale: 0.97 }}
+        >
+          Сохранить
+        </motion.button>
+        <motion.button
+          onClick={() => setShowBurnedModal(false)}
+          className="bg-gray-200 text-blue-900 p-3 rounded-lg flex-1"
+          whileHover={{ scale: 1.03 }}
+          whileTap={{ scale: 0.97 }}
+        >
+          Отмена
+        </motion.button>
+      </div>
+    </div>
+  </motion.div>
+)}
 
       {/* Прогресс калорий */}
       <motion.div
@@ -457,7 +640,9 @@ export const FoodAnalysis = () => {
         animate={{ opacity: 1 }}
       >
         <div className="flex justify-between items-center mb-3">
-          <h2 className="text-lg font-semibold text-gray-800">Прогресс калорий</h2>
+          <h2 className="text-lg font-semibold text-gray-800">
+            Прогресс калорий
+          </h2>
         </div>
         <div className="flex justify-between items-center text-lg font-bold text-gray-800">
           <input
@@ -467,27 +652,36 @@ export const FoodAnalysis = () => {
             onBlur={(e) => updateCalorieGoal(parseInt(e.target.value) || 0)}
             className="w-20 p-1 border rounded-lg text-right"
           />
+           <span className="text-gray-500">+</span>
+           <span>{burnedCalories}</span>
           <span className="text-gray-500">-</span>
           <span>{totalConsumed}</span>
           <span className="text-gray-500">=</span>
-          <span className={remaining >= 0 ? "text-orange-600" : "text-red-600"}>{remaining}</span>
+          <span className={remaining >= 0 ? "text-orange-600" : "text-red-600"}>
+            {remaining}
+          </span>
         </div>
         <div className="flex justify-between text-xs text-gray-500 mt-2">
-          <span>Цель</span>
-          <span>Потреблено</span>
-          <span>Осталось</span>
+        <span>Цель</span>
+  <span>Потрачено</span>
+  <span>Съедено</span>
+  <span>Баланс</span>
         </div>
       </motion.div>
 
       {/* Секции приёмов пищи */}
       {(["Завтрак", "Обед", "Перекус", "Ужин"] as const).map((mealType) => {
-        const mealsForSelectedDate = meals[mealType].filter((meal) => {
-          const mealDate = meal.date.split("T")[0];
-          const selectedDateString = getDateString(selectedDate);
-          return mealDate === selectedDateString;
-        });
+  const mealsForSelectedDate = meals[mealType].filter((meal) => {
+    const mealDate = meal.date.split("T")[0];
+    const selectedDateString = getDateString(selectedDate);
+    return mealDate === selectedDateString;
+  });
 
-        const totalCalories = mealsForSelectedDate.reduce((sum, meal) => sum + meal.calories, 0);
+
+        const totalCalories = mealsForSelectedDate.reduce(
+          (sum, meal) => sum + meal.calories,
+          0
+        );
 
         return (
           <motion.div
@@ -513,14 +707,43 @@ export const FoodAnalysis = () => {
               </motion.button>
             </div>
             {mealsForSelectedDate.length > 0 ? (
-              mealsForSelectedDate.map((meal) => (
-                <div key={meal.id} className="flex justify-between items-center mt-2">
-                  <span>{meal.dish}</span>
-                  <span>{meal.calories} ккал</span>
-                </div>
-              ))
+              <div className="mt-2 space-y-2">
+                {mealsForSelectedDate.map((meal) => (
+                  <div
+                    key={meal.id}
+                    className="flex justify-between items-center p-2 bg-gray-50 rounded-lg"
+                  >
+                    <div className="flex-1">
+                      <span className="font-medium">{meal.dish}</span>
+                      {meal.photoUrl && (
+                        <div className="mt-1">
+                          <img 
+                            src={meal.photoUrl} 
+                            alt={meal.dish}
+                            className="h-16 rounded object-cover"
+                          />
+                        </div>
+                      )}
+                    </div>
+                    <div className="flex items-center">
+                      <span className="mr-3">{meal.calories} ккал</span>
+                      <motion.button
+                        onClick={() => handleDeleteMeal(meal.id, mealType)}
+                        className="text-red-500 hover:text-red-700"
+                        whileHover={{ scale: 1.2 }}
+                        whileTap={{ scale: 0.9 }}
+                        title="Удалить блюдо"
+                      >
+                        <IoTrash size={18} />
+                      </motion.button>
+                    </div>
+                  </div>
+                ))}
+              </div>
             ) : (
-              <p className="text-gray-500 text-sm mt-2">Ещё ничего не добавлено.</p>
+              <p className="text-gray-500 text-sm mt-2">
+                Ещё ничего не добавлено.
+              </p>
             )}
           </motion.div>
         );
@@ -534,7 +757,9 @@ export const FoodAnalysis = () => {
           animate={{ opacity: 1 }}
         >
           <div className="bg-white p-6 rounded-xl max-w-md w-full">
-            <h2 className="text-lg font-medium text-blue-900 mb-4">Добавить блюдо</h2>
+            <h2 className="text-lg font-medium text-blue-900 mb-4">
+              Добавить блюдо
+            </h2>
             <motion.button
               onClick={() => setShowManualInput(true)}
               className="bg-blue-200 text-gray-700 p-3 rounded-lg w-full mb-4 font-medium flex items-center justify-center"
@@ -544,7 +769,9 @@ export const FoodAnalysis = () => {
               <IoPencil size={20} className="mr-2" /> Ввести данные вручную
             </motion.button>
             <div className="mb-4">
-              <h2 className="text-lg font-semibold text-blue-900 mb-3">Загрузите фото еды:</h2>
+              <h2 className="text-lg font-semibold text-blue-900 mb-3">
+                Загрузите фото еды:
+              </h2>
               <label className="block">
                 <input
                   type="file"
@@ -607,19 +834,25 @@ export const FoodAnalysis = () => {
           animate={{ opacity: 1 }}
         >
           <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-300">
-            <h3 className="text-lg font-semibold text-blue-900 mb-3">Ручной ввод</h3>
+            <h3 className="text-lg font-semibold text-blue-900 mb-3">
+              Ручной ввод
+            </h3>
             <input
               type="text"
               placeholder="Название блюда"
               value={manualInput.dish}
-              onChange={(e) => setManualInput({ ...manualInput, dish: e.target.value })}
+              onChange={(e) =>
+                setManualInput({ ...manualInput, dish: e.target.value })
+              }
               className="w-full p-2 mb-2 border rounded-lg"
             />
             <input
               type="number"
               placeholder="Вес (г)"
               value={manualInput.grams}
-              onChange={(e) => setManualInput({ ...manualInput, grams: e.target.value })}
+              onChange={(e) =>
+                setManualInput({ ...manualInput, grams: e.target.value })
+              }
               className="w-full p-2 mb-2 border rounded-lg"
             />
             <div className="flex gap-2">

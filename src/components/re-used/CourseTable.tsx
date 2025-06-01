@@ -24,6 +24,8 @@ type Course = {
   questions: string[]
   repeatAnalysis: string
   disclaimer: string
+  compatibilityNotes: string;
+
 }
 
 type CourseTableProps = {
@@ -123,7 +125,8 @@ export const CourseTable = ({ course }: CourseTableProps) => {
         <h3 className='text-md font-medium text-blue-900 mb-2'>
           Рекомендации:
         </h3>
-        <p className='text-gray-600 text-sm'>{course.suggestions}</p>
+        <p className='text-gray-600 text-sm'>{course.suggestions} </p>
+        <p className='text-gray-600 text-sm'>{course.compatibilityNotes} </p>
       </div>
 
       {/* Дисклеймер */}
