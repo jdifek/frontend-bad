@@ -285,6 +285,8 @@ export const AnalysisCourse = () => {
             dietPreference={dietPreference}
             setDietPreference={setDietPreference}
             onSelect={setGoals}
+            selectedGoals={goals}
+            setSelectedGoals={setGoals}
           />
           <motion.button
             onClick={handleGenerateCourse}

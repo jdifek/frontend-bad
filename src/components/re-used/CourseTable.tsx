@@ -24,7 +24,7 @@ type Course = {
   questions: string[]
   repeatAnalysis: string
   disclaimer: string
-  compatibilityNotes: string;
+  compatibilityNotes?: string;
 
 }
 
