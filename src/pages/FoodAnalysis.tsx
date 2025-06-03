@@ -752,7 +752,7 @@ export const FoodAnalysis = () => {
       {/* Модальное окно для выбора типа анализа */}
       {showModal && (
         <motion.div
-          className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4"
+          className="fixed inset-0 bg-blue-100 bg-opacity-50 flex items-center justify-center p-4"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
         >
