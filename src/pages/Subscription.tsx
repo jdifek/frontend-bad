@@ -1,5 +1,6 @@
 // Subscription.jsx
 import { useState } from "react";
+const BASE_URL = import.meta.env.VITE_BASE_API_URL;
 
 const Subscription = () => {
   const [loading, setLoading] = useState(false);
@@ -7,7 +8,7 @@ const Subscription = () => {
   const handlePayment = async () => {
     setLoading(true);
 
-    const response = await fetch("http://localhost:3221/api/create-payment", {
+    const response = await fetch(`${BASE_URL}/api/create-payment`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -36,7 +37,8 @@ const Subscription = () => {
           Подписка на ИИ-нутрициолога
         </h1>
         <p className="text-gray-700 mb-6">
-          Получите полный доступ ко всем рекомендациям по питанию, анализу продуктов и персонализированным планам здоровья всего за{" "}
+          Получите полный доступ ко всем рекомендациям по питанию, анализу
+          продуктов и персонализированным планам здоровья всего за{" "}
           <strong>199 ₽ в месяц</strong>.
         </p>
         <button
