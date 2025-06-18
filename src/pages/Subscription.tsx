@@ -7,50 +7,26 @@ const Subscription = () => {
 
   const handlePayment = async () => {
     setLoading(true);
-    const tg = window.Telegram?.WebApp;
-    const telegramId = tg?.initDataUnsafe?.user?.id || "TEST_USER";
-  
-    try {
-      // 1. Создаем платеж
-      const paymentResponse = await fetch(`${BASE_URL}/api/create-payment`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          amount: 199,
-          orderId: `sub_${Date.now()}`,
-          description: "Премиум подписка",
-          telegramId
-        })
-      });
-  
-      const { OrderId } = await paymentResponse.json();
-  
-      // 2. Открываем платежную страницу
-  
-      // 3. Проверяем статус каждые 5 секунд
-      const checkInterval = setInterval(async () => {
-        try {
-          const confirmResponse = await fetch(`${BASE_URL}/api/confirm-payment`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ OrderId })
-          });
-  
-          const { success } = await confirmResponse.json();
-          
-          if (success) {
-            clearInterval(checkInterval);
-            window.location.reload(); // Обновляем страницу
-          }
-        } catch (error) {
-          console.error("Payment check error:", error);
-        }
-      }, 5000);
-  
-    } catch (error) {
-      console.error("Payment error:", error);
-    } finally {
-      setLoading(false);
+
+    const response = await fetch(`${BASE_URL}/api/create-payment`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        amount: 199, // ₽
+        orderId: "order_" + Date.now(),
+        description: "TestPayment",
+        customerEmail: "user@example.com",
+        customerPhone: "+79999999999",
+      }),
+    });
+
+    const data = await response.json();
+    setLoading(false);
+
+    if (data.PaymentURL) {
+      window.location.href = data.PaymentURL;
+    } else {
+      // alert("Ошибка при создании платежа");
     }
   };
 
