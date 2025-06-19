@@ -72,7 +72,7 @@ const Subscription = () => {
 
       if (response.data.PaymentURL) {
         setPaymentId(response.data.PaymentId);
-        window.open(response.data.PaymentURL, "_blank");
+        window.location.href = response.data.PaymentURL;
       }
     } catch (error) {
       console.error("Ошибка создания платежа:", error);
@@ -88,7 +88,7 @@ const Subscription = () => {
         <h1 className="text-3xl font-bold text-blue-900 mb-4">
           Подписка на ИИ-нутрициолога
         </h1>
-        
+
         {isPremium || paymentStatus === "CONFIRMED" ? (
           <div className="p-4 bg-green-100 text-green-800 rounded-lg mb-4">
             ✅ Подписка активна!
@@ -103,14 +103,16 @@ const Subscription = () => {
           onClick={handlePayment}
           disabled={loading || isPremium}
           className={`w-full p-3 rounded-xl ${
-            isPremium 
-              ? "bg-green-600 text-white cursor-default" 
+            isPremium
+              ? "bg-green-600 text-white cursor-default"
               : "bg-blue-600 text-white hover:bg-blue-700"
           } ${loading ? "opacity-50" : ""}`}
         >
-          {loading ? "Обработка..." : 
-           isPremium ? "Подписка активна" : 
-           "Оформить подписку за 199 ₽"}
+          {loading
+            ? "Обработка..."
+            : isPremium
+            ? "Подписка активна"
+            : "Оформить подписку за 199 ₽"}
         </button>
       </div>
     </div>
