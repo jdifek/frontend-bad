@@ -53,23 +53,26 @@ export const Navigation = () => {
       animate="visible"
       variants={navVariants}
     >
-      <div className="max-w-md mx-auto pt-[80px] px-4 pb-4 flex items-center justify-between">
-        <div className="flex gap-3">
-          {pathname.pathname !== "/" ? <BackButton /> : ""}
-          <Link
-            to="/"
-            className="text-xl font-bold text-blue-900 flex items-center gap-2"
-          >
-            <img src="/IMG_7761.PNG" alt="logo" className="w-40" />
-          </Link>
-        </div>
-        <button
-          className="text-blue-900 p-2 rounded-full hover:bg-blue-50 transition-colors"
-          onClick={() => setIsOpen(!isOpen)}
-        >
-          {isOpen ? <IoClose size={24} /> : <IoMenu size={24} />}
-        </button>
-      </div>
+     {pathname.pathname !== "/subscription" && (
+  <div className="max-w-md mx-auto pt-[80px] px-4 pb-4 flex items-center justify-between">
+    <div className="flex gap-3">
+      {pathname.pathname !== "/" ? <BackButton /> : ""}
+      <Link
+        to="/"
+        className="text-xl font-bold text-blue-900 flex items-center gap-2"
+      >
+        <img src="/IMG_7761.PNG" alt="logo" className="w-40" />
+      </Link>
+    </div>
+    <button
+      className="text-blue-900 p-2 rounded-full hover:bg-blue-50 transition-colors"
+      onClick={() => setIsOpen(!isOpen)}
+    >
+      {isOpen ? <IoClose size={24} /> : <IoMenu size={24} />}
+    </button>
+  </div>
+)}
+
       <motion.div
         className="overflow-hidden"
         variants={menuVariants}
