@@ -469,11 +469,11 @@ export const MyCourse = () => {
                   );
                   return (
                     <>
-                      {progress?.status === "TAKEN" ? (
-                        <FaCheck className="text-green-600" size={20} />
-                      ) : progress?.status === "SKIPPED" ? (
-                        <FaTimes className="text-red-600" size={20} />
-                      ) : (
+                     {progress?.status === "TAKEN" ? (
+  <FaCheck className="text-green-600 opacity-50" size={20} />
+) : progress?.status === "SKIPPED" ? (
+  <FaTimes className="text-red-600 opacity-50" size={20} />
+): (
                         <>
                           <button
                             onClick={() =>
@@ -525,11 +525,11 @@ export const MyCourse = () => {
                   );
                   return (
                     <>
-                      {progress?.status === "TAKEN" ? (
-                        <FaCheck className="text-green-600" size={20} />
-                      ) : progress?.status === "SKIPPED" ? (
-                        <FaTimes className="text-red-600" size={20} />
-                      ) : (
+                     {progress?.status === "TAKEN" ? (
+  <FaCheck className="text-green-600 opacity-50" size={20} />
+) : progress?.status === "SKIPPED" ? (
+  <FaTimes className="text-red-600 opacity-50" size={20} />
+) : (
                         <>
                           <button
                             onClick={() =>
@@ -581,11 +581,11 @@ export const MyCourse = () => {
                   );
                   return (
                     <>
-                      {progress?.status === "TAKEN" ? (
-                        <FaCheck className="text-green-600" size={20} />
-                      ) : progress?.status === "SKIPPED" ? (
-                        <FaTimes className="text-red-600" size={20} />
-                      ) : (
+                     {progress?.status === "TAKEN" ? (
+  <FaCheck className="text-green-600 opacity-50" size={20} />
+) : progress?.status === "SKIPPED" ? (
+  <FaTimes className="text-red-600 opacity-50" size={20} />
+) : (
                         <>
                           <button
                             onClick={() =>
