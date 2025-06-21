@@ -69,7 +69,7 @@ export const App = () => {
         console.log("tgWebAppData not found in URL, using hardcoded data");
         console.log("Calling login with hardcoded data");
         login({
-          telegramId: "5666369",
+          telegramId: "5969166369",
           name: "Денис",
           photoUrl:
             "https://t.me/i/userpic/320/ArOpXH92rj_EpmqJ6uB_-vEugbCinOd3VU8tLlkf5DSxI8r40DuBCgyZH4VxImpQ.svg",

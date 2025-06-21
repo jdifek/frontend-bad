@@ -56,8 +56,10 @@ export const FoodAnalysis = () => {
   const [burnedInput, setBurnedInput] = useState("");
   const { user, isLoading: authLoading } = useAuth();
 
-  const [calorieGoal, setCalorieGoal] = useState<number>(user?.goal || 0);
-  const [meals, setMeals] = useState<Meals>({
+  const [calorieGoal, setCalorieGoal] = useState<number | null>(user?.goal ?? null);
+  const [calorieGoalInput, setCalorieGoalInput] = useState<string>(
+    user?.goal?.toString() ?? ""
+  );  const [meals, setMeals] = useState<Meals>({
     Завтрак: [],
     Обед: [],
     Перекус: [],
@@ -394,7 +396,7 @@ export const FoodAnalysis = () => {
   };
 
   // Обновляем формулу расчета
-  const remaining = calorieGoal + burnedCalories - totalConsumed;
+  const remaining = (calorieGoal ?? 0) + burnedCalories - totalConsumed;
   // Получение еды за выбранную дату
   const getMealsForDate = (date: Date) => {
     const dateString = getDateString(date);
@@ -545,10 +547,10 @@ export const FoodAnalysis = () => {
                   <ul className="text-blue-700">
                     {getMealsForDate(selectedDate).map((meal, index) => (
                       <li key={index} className="py-1 flex justify-between">
-                        <span>
-                          {meal.type}: {meal.dish}
+<span className="w-[70%] break-words whitespace-normal">
+{meal.type}: {meal.dish}
                         </span>
-                        <span>{meal.calories} ккал</span>
+                        <span className="w-[20%]">{meal.calories} ккал</span>
                       </li>
                     ))}
                   </ul>
@@ -645,13 +647,21 @@ export const FoodAnalysis = () => {
           </h2>
         </div>
         <div className="flex justify-between items-center text-lg font-bold text-gray-800">
-          <input
-            type="number"
-            value={calorieGoal}
-            onChange={(e) => setCalorieGoal(parseInt(e.target.value) || 0)}
-            onBlur={(e) => updateCalorieGoal(parseInt(e.target.value) || 0)}
-            className="w-20 p-1 border rounded-lg text-right"
-          />
+        <input
+  type="number"
+  value={calorieGoalInput}
+  onChange={(e) => setCalorieGoalInput(e.target.value)}
+  onBlur={() => {
+    const parsed = parseInt(calorieGoalInput);
+    if (!isNaN(parsed)) {
+      setCalorieGoal(parsed);
+      updateCalorieGoal(parsed);
+    } else {
+      setCalorieGoal(null);
+    }
+  }}
+  className="w-20 p-1 border rounded-lg text-right"
+/>
            <span className="text-gray-500">+</span>
            <span>{burnedCalories}</span>
           <span className="text-gray-500">-</span>
