@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
@@ -73,7 +72,7 @@ export const QuickCourse = () => {
             questions: latestCourse.questions || [],
             disclaimer:
               latestCourse.disclaimer ||
-              "Персонализированные рекомендации ИИ-нутрициолога на основе открытых исследований и общих принципов. Не является медицинской услугой или диагнозом",
+              "Персонализированные рекомендации Личный нутрициолога на основе открытых исследований и общих принципов. Не является медицинской услугой или диагнозом",
             repeatAnalysis: latestCourse.repeatAnalysis || "",
             duration: latestCourse.duration || 30,
           });
@@ -189,11 +188,10 @@ export const QuickCourse = () => {
         questions: response.data.questions || [],
         disclaimer:
           response.data.disclaimer ||
-          "Персонализированные рекомендации ИИ-нутрициолога на основе открытых исследований и общих принципов. Не является медицинской услугой или диагнозом",
+          "Персонализированные рекомендации Личный нутрициолога на основе открытых исследований и общих принципов. Не является медицинской услугой или диагнозом",
         repeatAnalysis: response.data.repeatAnalysis || "",
         duration: response.data.course.duration || 30,
-        compatibilityNotes: response.data.compatibilityNotes
-        
+        compatibilityNotes: response.data.compatibilityNotes,
       });
       toast.success("Курс успешно создан!", {
         position: "bottom-center",
@@ -223,7 +221,7 @@ export const QuickCourse = () => {
       setError("Пользователь не авторизован.");
       return;
     }
-  
+
     try {
       setLoading(true);
       const response = await $api.post("/api/my-course/up", {
@@ -231,29 +229,28 @@ export const QuickCourse = () => {
         courseOld: course,
         telegramId: user.telegramId,
       });
-  
+
       const updatedCourse = response.data;
-  
+
       if (!updatedCourse || !updatedCourse.supplements) {
         throw new Error("Некорректный ответ от сервера.");
       }
-  
+
       setCourse({
         ...updatedCourse,
         supplements: updatedCourse.supplements || [],
         suggestions:
           updatedCourse.suggestions ||
           "Следуйте расписанию для достижения цели.",
-        warnings:
-          updatedCourse.warnings || "Проконсультируйтесь с врачом.",
+        warnings: updatedCourse.warnings || "Проконсультируйтесь с врачом.",
         questions: updatedCourse.questions || [],
         disclaimer:
           updatedCourse.disclaimer ||
-          "Персонализированные рекомендации ИИ-нутрициолога на основе открытых исследований и общих принципов. Не является медицинской услугой или диагнозом",
+          "Персонализированные рекомендации Личный нутрициолога на основе открытых исследований и общих принципов. Не является медицинской услугой или диагнозом",
         repeatAnalysis: updatedCourse.repeatAnalysis || "",
         duration: updatedCourse.duration || 30,
       });
-  
+
       toast.success("Курс успешно обновлен!", {
         position: "bottom-center",
         autoClose: 5000,
@@ -271,8 +268,7 @@ export const QuickCourse = () => {
       setLoading(false);
     }
   };
-  
-  
+
   const handleDeleteCourse = async () => {
     if (!course) {
       toast.error("Курс не выбран для удаления.", {

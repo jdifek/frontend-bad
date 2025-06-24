@@ -94,15 +94,14 @@ export const App = () => {
   }
   const isOnSubscriptionPage = window.location.pathname === "/subscription";
 
-
   if (!user?.isAdmin && !user?.isPremium && !isOnSubscriptionPage) {
     return (
       <div className="min-h-screen bg-blue-50 flex items-center justify-center">
         <div className="text-center p-6 space-y-4">
           <h1 className="text-2xl font-bold text-blue-900">Доступ ограничен</h1>
           <p className="text-gray-600">
-            Чтобы получить доступ к возможностям ИИ-нутрициолога, купите ежовик на Wildberries
-            или оформите месячную подписку.
+            Чтобы получить доступ к возможностям Личный нутрициолога, купите
+            ежовик на Wildberries или оформите месячную подписку.
           </p>
           <div className="flex justify-center gap-4 flex-wrap">
             <a
@@ -122,7 +121,6 @@ export const App = () => {
       </div>
     );
   }
-  
 
   return (
     <div className="min-h-screen bg-blue-50">

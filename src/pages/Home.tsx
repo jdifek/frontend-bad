@@ -51,7 +51,7 @@ export const Home = () => {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
       >
-        ИИ-нутрициолог
+        Личный нутрициолог
       </motion.h1>
       <motion.p
         className="text-center mb-10 text-gray-600 font-light text-lg"

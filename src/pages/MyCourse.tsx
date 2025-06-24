@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { AnimatePresence, motion } from "framer-motion";
 import { useEffect, useState } from "react";
@@ -777,7 +776,7 @@ export const MyCourse = () => {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
           >
-            ИИ-нутрициолог не заменяет консультацию врача. Это рекомендации
+            Личный нутрициолог не заменяет консультацию врача. Это рекомендации
             общего характера, основанные на открытых данных.
           </motion.p>
         </>

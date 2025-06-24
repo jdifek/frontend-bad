@@ -86,7 +86,7 @@ const Subscription = () => {
     <div className="min-h-screen bg-white flex items-center justify-center p-4 pt-40">
       <div className="max-w-md w-full bg-blue-50 p-6 rounded-2xl shadow-md text-center">
         <h1 className="text-3xl font-bold text-blue-900 mb-4">
-          Подписка на ИИ-нутрициолога
+          Подписка на Личный нутрициолога
         </h1>
 
         {isPremium || paymentStatus === "CONFIRMED" ? (
