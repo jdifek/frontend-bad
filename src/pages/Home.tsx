@@ -14,7 +14,24 @@ export const Home = () => {
   const { user, isLoading: authLoading } = useAuth();
 
   console.log(user?.isAdmin);
+  const handleTabClick = async (tabName: string) => {
+    const telegramId = user?.telegramId; // возьми из контекста или пропсов
+    if (!telegramId) {
+      console.warn("No telegramId in Navigation");
+      return;
+    }
+    console.log("Sending tab click for:", tabName);
 
+    try {
+      const res = await $api.post("/api/admin/click-tab", {
+        telegramId,
+        tabName,
+      });
+      console.log("Tab click response:", res.data);
+    } catch (error) {
+      console.error("Error sending tab click:", error);
+    }
+  };
   const buttonVariants = {
     hover: {
       scale: 1.05,
@@ -64,6 +81,9 @@ export const Home = () => {
       <div className="space-y-5">
         <motion.div variants={buttonVariants} whileHover="hover" whileTap="tap">
           <Link
+            onClick={() => {
+              handleTabClick("Быстрый курс по цели"); // Отправляем название вкладки при клике
+            }}
             to="/quick-course"
             className="flex items-center justify-center w-full p-4 bg-white text-blue-900 rounded-xl shadow-md border border-gray-300 hover:border-blue-600"
           >
@@ -73,6 +93,9 @@ export const Home = () => {
         </motion.div>
         <motion.div variants={buttonVariants} whileHover="hover" whileTap="tap">
           <Link
+            onClick={() => {
+              handleTabClick("Курс по анализам"); // Отправляем название вкладки при клике
+            }}
             to="/analysis-course"
             className="flex items-center justify-center w-full p-4 bg-white text-blue-900 rounded-xl shadow-md border border-gray-300 hover:border-blue-600"
           >
@@ -82,6 +105,9 @@ export const Home = () => {
         </motion.div>
         <motion.div variants={buttonVariants} whileHover="hover" whileTap="tap">
           <Link
+            onClick={() => {
+              handleTabClick("Анализ питания по фото"); // Отправляем название вкладки при клике
+            }}
             to="/food-analysis"
             className="flex items-center justify-center w-full p-4 bg-white text-blue-900 rounded-xl shadow-md border border-gray-300 hover:border-blue-600"
           >
@@ -91,6 +117,9 @@ export const Home = () => {
         </motion.div>
         <motion.div variants={buttonVariants} whileHover="hover" whileTap="tap">
           <Link
+            onClick={() => {
+              handleTabClick("Мои курсы"); // Отправляем название вкладки при клике
+            }}
             to={courses === true ? "/my-course" : "/quick-course"}
             className="flex items-center justify-center w-full p-4 bg-white text-blue-900 rounded-xl shadow-md border border-gray-300 hover:border-blue-600"
           >
@@ -100,7 +129,10 @@ export const Home = () => {
         </motion.div>
         <motion.div variants={buttonVariants} whileHover="hover" whileTap="tap">
           <button
-            onClick={() => setIsModalOpen(true)}
+            onClick={() => {
+              setIsModalOpen(true);
+              handleTabClick("О сервисе"); // Отправляем название вкладки при клике
+            }}
             className="flex items-center justify-center w-full p-4 bg-white text-blue-900 rounded-xl shadow-md border border-gray-300 hover:border-blue-600"
           >
             <IoInformationCircle className="mr-3 text-xl text-blue-600" />
@@ -110,6 +142,9 @@ export const Home = () => {
 
         <motion.div variants={buttonVariants} whileHover="hover" whileTap="tap">
           <Link
+            onClick={() => {
+              handleTabClick("Обратная связь"); // Отправляем название вкладки при клике
+            }}
             to="/feedback"
             className="flex items-center justify-center w-full p-4 bg-white text-blue-900 rounded-xl shadow-md border border-gray-300 hover:border-blue-600"
           >
@@ -130,6 +165,21 @@ export const Home = () => {
             >
               <IoInformationCircle className="mr-3 text-xl text-blue-600" />
               <span className="font-medium">Генерация QR</span>
+            </Link>
+          </motion.div>
+        )}
+        {user?.isAdmin && (
+          <motion.div
+            variants={buttonVariants}
+            whileHover="hover"
+            whileTap="tap"
+          >
+            <Link
+              to="/admin-panel"
+              className="flex items-center justify-center w-full p-4 bg-white text-blue-900 rounded-xl shadow-md border border-gray-300 hover:border-blue-600"
+            >
+              <IoInformationCircle className="mr-3 text-xl text-blue-600" />
+              <span className="font-medium">Админ панель</span>
             </Link>
           </motion.div>
         )}

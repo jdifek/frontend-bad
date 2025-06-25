@@ -24,9 +24,9 @@ export const SupplementInput = ({ supplements, onAdd, onRemove, onPhotosChange }
   const commonSupplements = [
     'Омега-3',
     'Витамин D',
+    'Ежовик гребенчатый',
     'Магний',
     'Цинк',
-    'Пробиотики',
     'Витамин С',
   ];
 

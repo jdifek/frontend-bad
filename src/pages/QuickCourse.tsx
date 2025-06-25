@@ -72,7 +72,7 @@ export const QuickCourse = () => {
             questions: latestCourse.questions || [],
             disclaimer:
               latestCourse.disclaimer ||
-              "Персонализированные рекомендации Личный нутрициолога на основе открытых исследований и общих принципов. Не является медицинской услугой или диагнозом",
+              "Персонализированные рекомендации Личного нутрициолога на основе открытых исследований и общих принципов. Не является медицинской услугой или диагнозом",
             repeatAnalysis: latestCourse.repeatAnalysis || "",
             duration: latestCourse.duration || 30,
           });
@@ -188,7 +188,7 @@ export const QuickCourse = () => {
         questions: response.data.questions || [],
         disclaimer:
           response.data.disclaimer ||
-          "Персонализированные рекомендации Личный нутрициолога на основе открытых исследований и общих принципов. Не является медицинской услугой или диагнозом",
+          "Персонализированные рекомендации Личного нутрициолога на основе открытых исследований и общих принципов. Не является медицинской услугой или диагнозом",
         repeatAnalysis: response.data.repeatAnalysis || "",
         duration: response.data.course.duration || 30,
         compatibilityNotes: response.data.compatibilityNotes,
@@ -246,7 +246,7 @@ export const QuickCourse = () => {
         questions: updatedCourse.questions || [],
         disclaimer:
           updatedCourse.disclaimer ||
-          "Персонализированные рекомендации Личный нутрициолога на основе открытых исследований и общих принципов. Не является медицинской услугой или диагнозом",
+          "Персонализированные рекомендации Личного нутрициолога на основе открытых исследований и общих принципов. Не является медицинской услугой или диагнозом",
         repeatAnalysis: updatedCourse.repeatAnalysis || "",
         duration: updatedCourse.duration || 30,
       });

@@ -5,9 +5,13 @@ import { IoMenu, IoClose, IoFlask, IoRestaurant } from "react-icons/io5";
 import { ImTarget } from "react-icons/im";
 import { FaBook } from "react-icons/fa";
 import { BackButton } from "./BackButton";
+import $api from "../api/http";
+import { useAuth } from "../helpers/context/AuthContext";
 
 export const Navigation = () => {
   const [isOpen, setIsOpen] = useState(false);
+  const { user } = useAuth();
+
   const pathname = useLocation();
   const navItems = [
     {
@@ -45,6 +49,21 @@ export const Navigation = () => {
     closed: { height: 0, opacity: 0, transition: { duration: 0.3 } },
     open: { height: "auto", opacity: 1, transition: { duration: 0.3 } },
   };
+  const handleTabClick = async (tabName: string) => {
+    const telegramId = user?.telegramId; // возьми из контекста или пропсов
+    if (!telegramId) {
+      console.warn("No telegramId in Navigation");
+      return;
+    }
+    console.log("Sending tab click for:", tabName);
+  
+    try {
+      const res = await $api.post('/api/admin/click-tab', { telegramId, tabName });
+      console.log("Tab click response:", res.data);
+    } catch (error) {
+      console.error("Error sending tab click:", error);
+    }
+  };
 
   return (
     <motion.nav
@@ -53,25 +72,25 @@ export const Navigation = () => {
       animate="visible"
       variants={navVariants}
     >
-     {pathname.pathname !== "/subscription" && (
-  <div className="max-w-md mx-auto pt-[80px] px-4 pb-4 flex items-center justify-between">
-    <div className="flex gap-3">
-      {pathname.pathname !== "/" ? <BackButton /> : ""}
-      <Link
-        to="/"
-        className="text-xl font-bold text-blue-900 flex items-center gap-2"
-      >
-        <img src="/IMG_7761.PNG" alt="logo" className="w-40" />
-      </Link>
-    </div>
-    <button
-      className="text-blue-900 p-2 rounded-full hover:bg-blue-50 transition-colors"
-      onClick={() => setIsOpen(!isOpen)}
-    >
-      {isOpen ? <IoClose size={24} /> : <IoMenu size={24} />}
-    </button>
-  </div>
-)}
+      {pathname.pathname !== "/subscription" && (
+        <div className="max-w-md mx-auto pt-[80px] px-4 pb-4 flex items-center justify-between">
+          <div className="flex gap-3">
+            {pathname.pathname !== "/" ? <BackButton /> : ""}
+            <Link
+              to="/"
+              className="text-xl font-bold text-blue-900 flex items-center gap-2"
+            >
+              <img src="/IMG_7761.PNG" alt="logo" className="w-40" />
+            </Link>
+          </div>
+          <button
+            className="text-blue-900 p-2 rounded-full hover:bg-blue-50 transition-colors"
+            onClick={() => setIsOpen(!isOpen)}
+          >
+            {isOpen ? <IoClose size={24} /> : <IoMenu size={24} />}
+          </button>
+        </div>
+      )}
 
       <motion.div
         className="overflow-hidden"
@@ -84,8 +103,10 @@ export const Navigation = () => {
               key={item.path}
               to={item.path}
               className={`flex items-center p-3 text-blue-900 hover:bg-blue-50 rounded-lg transition-all border border-transparent hover:border-blue-600`}
-              onClick={() => setIsOpen(false)}
-            >
+              onClick={() => {
+                setIsOpen(false);
+                handleTabClick(item.label); // Отправляем название вкладки при клике
+              }}            >
               {item.icon}
               <span className="font-medium">{item.label}</span>
             </Link>
