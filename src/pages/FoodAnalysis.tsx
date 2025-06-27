@@ -343,7 +343,6 @@ export const FoodAnalysis = () => {
       });
     } catch (error) {
       console.error("Ошибка добавления еды:", error);
-      setError("Не удалось добавить еду.");
     }
   };
 
