@@ -109,21 +109,35 @@ export const MyCourse = () => {
 
   const calculateProgress = (course: Course) => {
     const startDate = new Date(course.createdAt);
-    const daysPassed = Math.floor(
-      (Date.now() - startDate.getTime()) / (1000 * 60 * 60 * 24)
-    );
+    const today = new Date();
     const totalDays = course.duration || 30;
-    const progress = Math.min((daysPassed / totalDays) * 100, 100);
-
-    const completed = course.progress.filter(
-      (p) => p.status === "TAKEN"
-    ).length;
-    const totalProgress = course.progress.length;
+  
+    const daysPassed = Math.min(
+      Math.floor((today.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24)),
+      totalDays
+    );
+  
+    // Сколько всего доз должно быть: (кол-во добавок в расписании) * (totalDays)
+    const supplementsPerDay =
+      course.schedule.morning.length +
+      course.schedule.afternoon.length +
+      course.schedule.evening.length;
+  
+    const expectedTotalDoses = totalDays * supplementsPerDay;
+  
+    // А сколько реально принял:
+    const takenDoses = course.progress.filter((p) => p.status === "TAKEN").length;
+  
+    // Прогресс — по дате (визуальный прогресс)
+    const visualProgress = Math.min((daysPassed / totalDays) * 100, 100);
+  
+    // Выполнено — по количеству добавок
     const completionRate =
-      totalProgress > 0 ? (completed / totalProgress) * 100 : 0;
-
-    return { daysPassed, totalDays, progress, completionRate };
+      expectedTotalDoses > 0 ? (takenDoses / expectedTotalDoses) * 100 : 0;
+  
+    return { daysPassed, totalDays, progress: visualProgress, completionRate };
   };
+  
 
   const handleMarkProgress = async (
     courseId: string,
