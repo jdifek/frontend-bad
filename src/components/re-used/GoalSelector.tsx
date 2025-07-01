@@ -105,7 +105,7 @@ export const GoalSelector = ({
         return;
       }
 
-      let updatedGoals = [...selectedGoals];
+      const updatedGoals = [...selectedGoals];
       if (updatedGoals.length < 2) {
         updatedGoals.push(newCustomGoal);
         setCustomGoals([...customGoals, newCustomGoal]);

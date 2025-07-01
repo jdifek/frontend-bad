@@ -216,58 +216,58 @@ export const QuickCourse = () => {
     }
   };
 
-  const handleUpCourse = async (id: string) => {
-    if (authLoading || !user?.telegramId) {
-      setError("Пользователь не авторизован.");
-      return;
-    }
+  // const handleUpCourse = async (id: string) => {
+  //   if (authLoading || !user?.telegramId) {
+  //     setError("Пользователь не авторизован.");
+  //     return;
+  //   }
 
-    try {
-      setLoading(true);
-      const response = await $api.post("/api/my-course/up", {
-        id,
-        courseOld: course,
-        telegramId: user.telegramId,
-      });
+  //   try {
+  //     setLoading(true);
+  //     const response = await $api.post("/api/my-course/up", {
+  //       id,
+  //       courseOld: course,
+  //       telegramId: user.telegramId,
+  //     });
 
-      const updatedCourse = response.data;
+  //     const updatedCourse = response.data;
 
-      if (!updatedCourse || !updatedCourse.supplements) {
-        throw new Error("Некорректный ответ от сервера.");
-      }
+  //     if (!updatedCourse || !updatedCourse.supplements) {
+  //       throw new Error("Некорректный ответ от сервера.");
+  //     }
 
-      setCourse({
-        ...updatedCourse,
-        supplements: updatedCourse.supplements || [],
-        suggestions:
-          updatedCourse.suggestions ||
-          "Следуйте расписанию для достижения цели.",
-        warnings: updatedCourse.warnings || "Проконсультируйтесь с врачом.",
-        questions: updatedCourse.questions || [],
-        disclaimer:
-          updatedCourse.disclaimer ||
-          "Персонализированные рекомендации Личного нутрициолога на основе открытых исследований и общих принципов. Не является медицинской услугой или диагнозом",
-        repeatAnalysis: updatedCourse.repeatAnalysis || "",
-        duration: updatedCourse.duration || 30,
-      });
+  //     setCourse({
+  //       ...updatedCourse,
+  //       supplements: updatedCourse.supplements || [],
+  //       suggestions:
+  //         updatedCourse.suggestions ||
+  //         "Следуйте расписанию для достижения цели.",
+  //       warnings: updatedCourse.warnings || "Проконсультируйтесь с врачом.",
+  //       questions: updatedCourse.questions || [],
+  //       disclaimer:
+  //         updatedCourse.disclaimer ||
+  //         "Персонализированные рекомендации Личного нутрициолога на основе открытых исследований и общих принципов. Не является медицинской услугой или диагнозом",
+  //       repeatAnalysis: updatedCourse.repeatAnalysis || "",
+  //       duration: updatedCourse.duration || 30,
+  //     });
 
-      toast.success("Курс успешно обновлен!", {
-        position: "bottom-center",
-        autoClose: 5000,
-        theme: "light",
-        transition: Slide,
-      });
-    } catch (e: any) {
-      console.error("Error updating course:", e);
-      toast.error("Не удалось обновить курс.", {
-        position: "bottom-center",
-        theme: "light",
-        transition: Slide,
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
+  //     toast.success("Курс успешно обновлен!", {
+  //       position: "bottom-center",
+  //       autoClose: 5000,
+  //       theme: "light",
+  //       transition: Slide,
+  //     });
+  //   } catch (e: any) {
+  //     console.error("Error updating course:", e);
+  //     toast.error("Не удалось обновить курс.", {
+  //       position: "bottom-center",
+  //       theme: "light",
+  //       transition: Slide,
+  //     });
+  //   } finally {
+  //     setLoading(false);
+  //   }
+  // };
 
   const handleDeleteCourse = async () => {
     if (!course) {
@@ -370,13 +370,13 @@ export const QuickCourse = () => {
         {loading
           ? "Генерация..."
           : isAddingSupplement
-          ? "Добавление добавки..."
+          ? "Загрузка добавки..."
           : "Сгенерировать курс"}
       </motion.button>
       {course && (
         <>
           <CourseTable course={course} />
-          <motion.button
+          {/* <motion.button
             onClick={() => handleUpCourse(course.id)}
             className="bg-[#ffffff] text-black p-3 rounded-xl mt-4 w-full font-medium shadow-md"
             disabled={loading}
@@ -387,7 +387,7 @@ export const QuickCourse = () => {
             whileTap={{ scale: 0.97 }}
           >
             {loading ? "Загрузка..." : "Усилить курс"}
-          </motion.button>
+          </motion.button> */}
           <motion.button
             onClick={() => navigate("/my-course")}
             className="bg-[#ffffff] text-black p-3 rounded-xl mt-4 w-full font-medium shadow-md"
