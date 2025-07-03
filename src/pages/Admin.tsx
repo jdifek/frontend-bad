@@ -167,7 +167,7 @@ const Admin: React.FC = () => {
           >
             {isLoading ? 'Создание...' : 'Создать QR-коды'}
           </motion.button>
-          {downloadUrl && (
+          {/* {downloadUrl && (
             <div className="mt-4">
               <p className="text-gray-700 mb-2">QR-коды готовы для скачивания:</p>
               <a
@@ -178,7 +178,7 @@ const Admin: React.FC = () => {
                 Скачать Excel файл
               </a>
             </div>
-          )}
+          )} */}
         </div>
 
         <Link to="/" className="block mt-4 text-blue-600 hover:underline">

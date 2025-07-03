@@ -15,22 +15,29 @@ export const Home = () => {
 
   console.log(user?.isAdmin);
   const handleTabClick = async (tabName: string) => {
-    const telegramId = user?.telegramId; // возьми из контекста или пропсов
+    const telegramId = user?.telegramId;
     if (!telegramId) {
-      console.warn("No telegramId in Navigation");
+      console.warn("Нет telegramId в Navigation");
       return;
     }
-    console.log("Sending tab click for:", tabName);
-
+    console.log("Отправка клика по вкладке:", { tabName });
+  
     try {
+      const date = getDateString(new Date()); // Отправляем дату в формате YYYY-MM-DD
       const res = await $api.post("/api/admin/click-tab", {
         telegramId,
         tabName,
+        date,
       });
-      console.log("Tab click response:", res.data);
+      console.log("Ответ клика по вкладке:", res.data);
     } catch (error) {
-      console.error("Error sending tab click:", error);
+      console.error("Ошибка отправки клика по вкладке:", error);
     }
+  };
+  
+  const getDateString = (date: Date) => {
+    const offsetDate = new Date(date.getTime() - date.getTimezoneOffset() * 60000);
+    return offsetDate.toISOString().split("T")[0];
   };
   const buttonVariants = {
     hover: {

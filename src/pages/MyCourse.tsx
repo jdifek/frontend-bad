@@ -712,7 +712,7 @@ export const MyCourse = () => {
 
           {/* Кнопка обновления */}
           <motion.button
-            onClick={() => setUpdateDialog(true)}
+            onClick={() => navigate('/quick-course')}
             className="bg-blue-600 text-white p-3 rounded-xl w-full font-medium shadow-md"
             whileHover={{
               scale: 1.03,
@@ -720,7 +720,7 @@ export const MyCourse = () => {
             }}
             whileTap={{ scale: 0.97 }}
           >
-            Обновить курс
+            Создать еще один курс
           </motion.button>
 
           {/* Кнопка удаления */}

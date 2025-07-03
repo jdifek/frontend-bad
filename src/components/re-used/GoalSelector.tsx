@@ -35,20 +35,27 @@ export const GoalSelector = ({
   const { user, isLoading: authLoading } = useAuth();
   const [isCustomGoalActive, setIsCustomGoalActive] = useState<boolean>(false);
 
+  const getDateString = (date: Date) => {
+    const offsetDate = new Date(date.getTime() - date.getTimezoneOffset() * 60000);
+    return offsetDate.toISOString().split("T")[0];
+  };
+  
   const trackAnalytics = async (goals: string[]) => {
     if (authLoading || !user?.telegramId) {
-      console.warn("Cannot track analytics: user not authenticated");
+      console.warn("Невозможно записать аналитику: пользователь не авторизован");
       return;
     }
-
+  
     try {
+      const date = getDateString(new Date()); // Отправляем дату в формате YYYY-MM-DD
       await $api.post("/api/courses/analytics/goals", {
         telegramId: user.telegramId,
         goals,
+        date,
       });
-      console.log("Goal analytics tracked:", goals);
+      console.log("Аналитика целей записана:", { goals, date });
     } catch (error) {
-      console.error("Error tracking goal analytics:", error);
+      console.error("Ошибка записи аналитики целей:", error);
     }
   };
 

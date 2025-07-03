@@ -234,9 +234,14 @@ export const FoodAnalysis = () => {
       const formData = new FormData();
       formData.append("telegramId", user.telegramId);
       formData.append("photo", photo);
-      // Добавляем тип приёма пищи
       formData.append("type", selectedMealType);
-      
+      formData.append("date", getDateString(selectedDate)); // Убедитесь, что дата добавляется
+  
+      // Для отладки: проверьте содержимое formData
+      console.log("FormData contents:");
+      for (const pair of formData.entries()) {
+        console.log(`${pair[0]}: ${pair[1]}`);
+      }
   
       const res = await $api.post("/api/food-analysis/photo", formData, {
         headers: { "Content-Type": "multipart/form-data" },
@@ -282,12 +287,15 @@ export const FoodAnalysis = () => {
       setLoading(true);
       setError(null);
   
+      const mealDate = getDateString(selectedDate); // Используем выбранную дату
+  
       const res = await $api.post("/api/food-analysis/manual", {
         telegramId: user.telegramId,
         dish: manualInput.dish,
         grams: parseFloat(manualInput.grams),
         suggestions: manualInput.suggestions || "Нет дополнительных рекомендаций.",
-        type: selectedMealType, // Добавляем тип приёма пищи
+        type: selectedMealType,
+        date: mealDate, // Добавляем дату
       });
   
       const newAnalysis = res.data.foodAnalysis;
@@ -317,18 +325,20 @@ export const FoodAnalysis = () => {
     if (!user?.telegramId) return;
   
     try {
-      const mealDate = new Date().toISOString();
+      // Используем выбранную дату из календаря
+      const mealDate = getDateString(selectedDate); // Форматируем дату в YYYY-MM-DD
   
+      // Обновляем локальное состояние
       setMeals((prev) => ({
         ...prev,
         [mealType]: [
           ...prev[mealType],
           {
-            id: Date.now().toString(), // Делаем строкой для консистентности
+            id: Date.now().toString(),
             dish: analysis.dish,
             calories: analysis.calories,
-            type: mealType, // Сохраняем выбранный тип
-            date: mealDate,
+            type: mealType,
+            date: mealDate, // Используем форматированную дату
           },
         ],
       }));
@@ -338,11 +348,17 @@ export const FoodAnalysis = () => {
         telegramId: user.telegramId,
         dish: analysis.dish,
         calories: analysis.calories,
-        type: mealType, // Отправляем тип на сервер
-        date: mealDate,
+        type: mealType,
+        date: mealDate, // Отправляем выбранную дату
       });
     } catch (error) {
       console.error("Ошибка добавления еды:", error);
+      toast.error("Не удалось добавить блюдо", {
+        position: "bottom-center",
+        autoClose: 3000,
+        theme: "light",
+        transition: Slide,
+      });
     }
   };
 
