@@ -6,7 +6,7 @@ import { IoCalendarOutline, IoDocumentAttachOutline } from "react-icons/io5";
 import { Slide, toast } from "react-toastify";
 import $api from "../api/http";
 import { useAuth } from "../helpers/context/AuthContext";
-import { BiCart, BiTrash } from "react-icons/bi";
+import {  BiTrash } from "react-icons/bi";
 import { useNavigate } from "react-router-dom";
 
 // Type definitions remain unchanged
