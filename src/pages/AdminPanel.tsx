@@ -9,6 +9,7 @@ interface User {
   id: string;
   telegramId: string;
   name?: string;
+  username?: string;
   isAdmin: boolean;
   isPremium: boolean;
   createdAt: string;
@@ -172,6 +173,7 @@ export const AdminPanel: React.FC = () => {
                 <tr className="bg-gray-100 text-left">
                   <th className="p-2 border">ID</th>
                   <th className="p-2 border">Telegram ID</th>
+                  <th className="p-2 border">Telegram username</th>
                   <th className="p-2 border">Имя</th>
                   <th className="p-2 border text-center">Премиум</th>
                   <th className="p-2 border text-center">Админ</th>
@@ -185,6 +187,7 @@ export const AdminPanel: React.FC = () => {
                   <tr key={user.id} className="hover:bg-gray-50 align-top">
                     <td className="p-2 border">{user.id}</td>
                     <td className="p-2 border">{user.telegramId}</td>
+                    <td className="p-2 border">{user.username}</td>
                     <td className="p-2 border">{user.name || '-'}</td>
                     <td className="p-2 border text-center">{user.isPremium ? '✅' : '❌'}</td>
                     <td className="p-2 border text-center">{user.isAdmin ? '✅' : '❌'}</td>

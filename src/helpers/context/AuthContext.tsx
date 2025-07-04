@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import {
   createContext,
   useContext,
@@ -25,6 +26,7 @@ interface AuthContextType {
     telegramId: string;
     name?: string;
     photoUrl?: string;
+    username?: string; // ← Добавлено
   }) => Promise<void>;
 }
 
@@ -50,33 +52,39 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     telegramId: string;
     name?: string;
     photoUrl?: string;
+    username?: string; // ← Добавлено
   }) => {
     try {
       setIsLoading(true);
       console.log("Attempting login with:", telegramData);
+  
       const response = await $api.post("/api/auth/login", telegramData);
+  
       console.log("Login response:", response.data);
       setUser(response.data.user);
       setAccessToken(response.data.accessToken);
       setRefreshToken(response.data.refreshToken);
+  
       localStorage.setItem("refreshToken", response.data.refreshToken);
       localStorage.setItem("accessToken", response.data.accessToken);
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
       console.error("Login error:", {
         message: error.message,
         response: error.response?.data,
         status: error.response?.status,
       });
+  
       setUser(null);
       setAccessToken(null);
       setRefreshToken(null);
+  
       localStorage.removeItem("refreshToken");
       localStorage.removeItem("accessToken");
     } finally {
       setIsLoading(false);
     }
   };
+  
 
   useEffect(() => {
     const storedRefreshToken = localStorage.getItem("refreshToken");

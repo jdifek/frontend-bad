@@ -1,19 +1,20 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { useState } from "react";
 import { motion } from "framer-motion";
 import { GoalSelector } from "../components/re-used/GoalSelector";
+import { SupplementInput } from "../components/re-used/SupplementInput";
 import { CourseTable } from "../components/re-used/CourseTable";
 import { IoCalendarOutline, IoDocumentAttachOutline } from "react-icons/io5";
 import { Slide, toast } from "react-toastify";
 import $api from "../api/http";
 import { useAuth } from "../helpers/context/AuthContext";
-import {  BiTrash } from "react-icons/bi";
+import { BiTrash } from "react-icons/bi";
 import { useNavigate } from "react-router-dom";
 
-// Type definitions remain unchanged
 type Supplement = {
   name: string;
   dose?: string;
-  time?: string;
+  file?: File;
 };
 
 type Course = {
@@ -47,14 +48,14 @@ export const AnalysisCourse = () => {
   const [dietPreference, setDietPreference] = useState<string>("none");
   const [goals, setGoals] = useState<string[]>([]);
   const [file, setFile] = useState<File | null>(null);
-  const [analysisSummary, setAnalysisSummary] =
-    useState<AnalysisSummary | null>(null);
+  const [supplements, setSupplements] = useState<Supplement[]>([]);
+  const [analysisSummary, setAnalysisSummary] = useState<AnalysisSummary | null>(null);
   const [course, setCourse] = useState<Course | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
   const { user, isLoading: authLoading } = useAuth();
   const navigate = useNavigate();
-  // Function to truncate file name
+
   const truncateFileName = (name: string, maxLength: number = 20) => {
     if (name.length <= maxLength) return name;
     const extension = name.split(".").pop();
@@ -105,7 +106,59 @@ export const AnalysisCourse = () => {
     }
   };
 
-  // Other functions (handleGenerateCourse, handleAddReminder) remain unchanged
+  const handleAddSupplement = async (
+    supplement: Supplement,
+    callback?: (recognizedSupplements: Supplement[]) => void
+  ) => {
+    if (authLoading || !user?.telegramId) {
+      setError("Пользователь не авторизован.");
+      return;
+    }
+
+    try {
+      setError(null);
+      let newSupplements: Supplement[] = [];
+
+      if (supplement.file) {
+        const formData = new FormData();
+        formData.append("telegramId", user.telegramId);
+        formData.append("photo", supplement.file);
+        const response = await $api.post("/api/courses/supplements", formData, {
+          headers: { "Content-Type": "multipart/form-data" },
+        });
+        newSupplements = Array.isArray(response.data.supplements)
+          ? response.data.supplements
+          : [response.data.supplements];
+      } else {
+        newSupplements = [{ name: supplement.name }];
+      }
+
+      setSupplements((prev) => [...prev, ...newSupplements]);
+      callback?.(newSupplements);
+      toast.success("Добавка успешно добавлена!", {
+        position: "bottom-center",
+        theme: "light",
+        transition: Slide,
+      });
+    } catch (error: any) {
+      console.error("Error adding supplement:", error);
+      setError(
+        `Не удалось добавить добавку: ${
+          error.response?.data?.message || error.message
+        }`
+      );
+    }
+  };
+
+  const handleRemoveSupplement = (supplementName: string) => {
+    setSupplements((prev) => prev.filter((s) => s.name !== supplementName));
+    toast.info("Добавка удалена.", {
+      position: "bottom-center",
+      theme: "light",
+      transition: Slide,
+    });
+  };
+
   const handleGenerateCourse = async () => {
     if (authLoading || !user?.telegramId) {
       setError("Пользователь не авторизован");
@@ -126,6 +179,14 @@ export const AnalysisCourse = () => {
       formData.append("goal", JSON.stringify(goals));
       formData.append("dietPreference", dietPreference);
       formData.append("file", file);
+      // Добавляем checklist с именами добавок
+      formData.append("checklist", JSON.stringify(supplements.map((s) => s.name)));
+      // Добавляем файлы добавок, если они есть
+      supplements.forEach((supplement, index) => {
+        if (supplement.file) {
+          formData.append(`supplementFiles[${index}]`, supplement.file);
+        }
+      });
 
       const response = await $api.post("/api/analyses", formData, {
         headers: { "Content-Type": "multipart/form-data" },
@@ -273,6 +334,7 @@ export const AnalysisCourse = () => {
                 setAnalysisSummary(null);
                 setGoals([]);
                 setCourse(null);
+                setSupplements([]);
               }}
               className="mt-2 text-blue-600 text-sm"
               whileHover={{ scale: 1.1 }}
@@ -307,6 +369,11 @@ export const AnalysisCourse = () => {
             onSelect={setGoals}
             selectedGoals={goals}
             setSelectedGoals={setGoals}
+          />
+          <SupplementInput
+            supplements={supplements}
+            onAdd={handleAddSupplement}
+            onRemove={handleRemoveSupplement}
           />
           <motion.button
             onClick={handleGenerateCourse}

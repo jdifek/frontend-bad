@@ -11,6 +11,8 @@ import { Slide, toast } from "react-toastify";
 import { useAuth } from "../helpers/context/AuthContext";
 
 type Analysis = {
+  id: any;
+  photoUrl: string;
   dish: string;
   calories: number;
   nutrients: { protein: number; fats: number; carbs: number };
@@ -325,34 +327,26 @@ export const FoodAnalysis = () => {
     if (!user?.telegramId) return;
   
     try {
-      // Используем выбранную дату из календаря
-      const mealDate = getDateString(selectedDate); // Форматируем дату в YYYY-MM-DD
+      // Форматируем дату для блюда
+      const mealDate = getDateString(selectedDate); // Формат YYYY-MM-DD
   
-      // Обновляем локальное состояние
+      // Обновляем локальное состояние, используя id и photoUrl из ответа сервера
       setMeals((prev) => ({
         ...prev,
         [mealType]: [
           ...prev[mealType],
           {
-            id: Date.now().toString(),
+            id: analysis.id, // Используем id из ответа сервера
             dish: analysis.dish,
             calories: analysis.calories,
             type: mealType,
-            date: mealDate, // Используем форматированную дату
+            date: mealDate,
+            photoUrl: analysis.photoUrl || undefined, // Добавляем photoUrl, если есть
           },
         ],
       }));
-  
-      // Отправляем данные на сервер
-      await $api.post("/api/meals", {
-        telegramId: user.telegramId,
-        dish: analysis.dish,
-        calories: analysis.calories,
-        type: mealType,
-        date: mealDate, // Отправляем выбранную дату
-      });
     } catch (error) {
-      console.error("Ошибка добавления еды:", error);
+      console.error("Ошибка добавления блюда:", error);
       toast.error("Не удалось добавить блюдо", {
         position: "bottom-center",
         autoClose: 3000,

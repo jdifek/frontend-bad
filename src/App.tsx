@@ -30,8 +30,10 @@ export const App = () => {
         login({
           telegramId: initData.user.id.toString(),
           name: initData.user.first_name || initData.user.username || "User",
+          username: initData.user.username || undefined, // ← Добавлено
           photoUrl: initData.user.photo_url || undefined,
-        }).catch((error) => {
+        })
+        .catch((error) => {
           console.error("Login error:", error.message);
         });
       } else {
@@ -58,6 +60,7 @@ export const App = () => {
           login({
             telegramId: user.id.toString(),
             name: user.first_name || user.username || "User",
+            username: user.username || undefined, // ← Добавлено
             photoUrl: user.photo_url || undefined,
           }).catch((error) => {
             console.error("Login error:", error.message);
@@ -71,6 +74,7 @@ export const App = () => {
         login({
           telegramId: "5969166369",
           name: "Денис",
+          username: "denis_nickname", // ← Указать если есть
           photoUrl:
             "https://t.me/i/userpic/320/ArOpXH92rj_EpmqJ6uB_-vEugbCinOd3VU8tLlkf5DSxI8r40DuBCgyZH4VxImpQ.svg",
         })
@@ -100,12 +104,12 @@ export const App = () => {
         <div className="text-center p-6 space-y-4">
           <h1 className="text-2xl font-bold text-blue-900">Доступ ограничен</h1>
           <p className="text-gray-600">
-            Чтобы получить доступ к возможностям Личный нутрициолога, купите
+            Чтобы получить доступ к возможностям Личного нутрициолога, купите
             ежовик на Wildberries или оформите месячную подписку.
           </p>
           <div className="flex justify-center gap-4 flex-wrap">
             <a
-              href="https://www.wildberries.ru/" // ← Укажите актуальную ссылку
+              href="https://www.wildberries.ru/catalog/316672227/detail.aspx?size=477597372" // ← Укажите актуальную ссылку
               className="p-3 bg-green-600 text-white rounded-xl hover:bg-green-700"
             >
               Купить ежовик
