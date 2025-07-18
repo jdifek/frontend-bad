@@ -687,28 +687,36 @@ export const MyCourse = () => {
 
           {/* История настроения */}
           {selectedCourse &&
-            selectedCourse.surveys &&
-            selectedCourse.surveys.length > 0 && (
-              <motion.div
-                className="bg-white p-4 rounded-xl shadow-sm mb-6"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-              >
-                <h2 className="text-lg font-medium text-blue-900 mb-2">
-                  Самочувствие
-                </h2>
-                <ul className="text-blue-700">
-                  {selectedCourse.surveys
-                    .filter((s) => s.status === "COMPLETED")
-                    .map((survey) => (
-                      <li key={survey.id} className="py-1">
-                        {new Date(survey.createdAt).toLocaleDateString()}:{" "}
-                        {survey.response}
-                      </li>
-                    ))}
-                </ul>
-              </motion.div>
-            )}
+  selectedCourse.surveys &&
+  selectedCourse.surveys.length > 0 && (
+    <motion.div
+      className="bg-white p-4 rounded-xl shadow-sm mb-6"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+    >
+      <h2 className="text-lg font-medium text-blue-900 mb-2">
+        Самочувствие
+      </h2>
+      <ul className="text-blue-700">
+        {selectedCourse.surveys
+          .filter((s) => s.status === "COMPLETED")
+          .map((survey) => {
+            const responseMap: Record<string, string> = {
+              good: "Хорошее",
+              normal: "Нормальное",
+              bad: "Плохое",
+            };
+            return (
+              <li key={survey.id} className="py-1">
+                {new Date(survey.createdAt).toLocaleDateString()}:{" "}
+                {responseMap[survey.response] || survey.response}
+              </li>
+            );
+          })}
+      </ul>
+    </motion.div>
+)}
+
 
           {/* Кнопка обновления */}
           <motion.button
